@@ -1,0 +1,93 @@
+<div class="container">
+  <h1>Personenverwaltung</h1>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  <!-- Tabelle -->
+  <section class="tabelle-section">
+    <h2>Personen</h2>
+    @if (ladevorgang()) {
+      <p class="ladehinweis">Wird geladen…</p>
+    } @else if (personen().length === 0) {
+      <p class="leerhinweis">Keine Personen vorhanden.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Vorname</th>
+            <th>Name</th>
+            <th>Telefon</th>
+            <th>Mobile</th>
+            <th>E-Mail</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (person of personen(); track person.id) {
+            <tr>
+              <td>{{ person.vorname }}</td>
+              <td>{{ person.name }}</td>
+              <td>{{ person.telefonnummer ?? '–' }}</td>
+              <td>{{ person.mobilenummer ?? '–' }}</td>
+              <td>{{ person.email ?? '–' }}</td>
+              <td>
+                <button class="btn btn--danger" (click)="loeschen(person)">Löschen</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!-- Erfassungsformular -->
+  <section class="form-section">
+    <h2>Person erfassen</h2>
+    @if (formFehler()) {
+      <div class="alert alert--error">{{ formFehler() }}</div>
+    }
+    <form [formGroup]="erfassenForm" (ngSubmit)="speichern()">
+      <div class="form-row">
+        <div class="form-field">
+          <label for="vorname">Vorname *</label>
+          <input id="vorname" type="text" formControlName="vorname" />
+          @if (feldUngueltig('vorname')) {
+            <span class="feldFehler">Vorname ist erforderlich.</span>
+          }
+        </div>
+        <div class="form-field">
+          <label for="name">Name *</label>
+          <input id="name" type="text" formControlName="name" />
+          @if (feldUngueltig('name')) {
+            <span class="feldFehler">Name ist erforderlich.</span>
+          }
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="telefonnummer">Telefonnummer</label>
+          <input id="telefonnummer" type="tel" formControlName="telefonnummer" />
+        </div>
+        <div class="form-field">
+          <label for="mobilenummer">Mobilenummer</label>
+          <input id="mobilenummer" type="tel" formControlName="mobilenummer" />
+        </div>
+        <div class="form-field">
+          <label for="email">E-Mail</label>
+          <input id="email" type="email" formControlName="email" />
+          @if (feldUngueltig('email')) {
+            <span class="feldFehler">Ungültige E-Mail-Adresse.</span>
+          }
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary">Speichern</button>
+      </div>
+    </form>
+  </section>
+</div>
