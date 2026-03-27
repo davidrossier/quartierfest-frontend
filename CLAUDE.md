@@ -24,8 +24,15 @@ Angular 21 standalone application — no NgModules. Every component uses the sta
 **Key files:**
 - `src/main.ts` — Bootstrap entry point using `bootstrapApplication`
 - `src/app/app.config.ts` — Application-level providers and configuration
-- `src/app/app.routes.ts` — Route definitions (currently empty)
+- `src/app/app.routes.ts` — Route definitions (`/personen` → `PersonenVerwaltungComponent`, default redirect to `/personen`)
 - `src/app/app.ts` — Root component with `<router-outlet>`
+
+## Implementierte Features
+
+### UC-001 Personenverwaltung (`src/app/personen/`)
+- `person.model.ts` — Interfaces `Person` (id, vorname, name, telefonnummer?, mobilenummer?, email?) und `PersonPayload` (ohne id)
+- `person.service.ts` — `getAll()`, `create()`, `delete(id)` via REST (`http://localhost:8080/api/persons`)
+- `personen-verwaltung.component.ts` / `.html` / `.css` — Standalone-Component, Route `/personen`
 
 **Testing:** Vitest (not Karma/Jasmine). Test files are `*.spec.ts` alongside source files.
 
@@ -35,4 +42,8 @@ Angular 21 standalone application — no NgModules. Every component uses the sta
 
 ## Backend
 REST API läuft auf http://localhost:8080
-Endpunkte und Datenmodell: siehe ../quartierfest-backend/specs/
+Endpunkte und Datenmodell: siehe `../quartierfest-backend/specs/`
+
+Bekannte Endpunkte:
+- `GET/POST /api/persons` — Personen abrufen / anlegen
+- `DELETE /api/persons/:id` — Person löschen
