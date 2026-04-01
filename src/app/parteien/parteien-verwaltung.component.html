@@ -30,7 +30,13 @@
           @for (partei of parteien(); track partei.id) {
             <tr>
               <td>{{ partei.adresse }}</td>
-              <td>{{ partei.twintAktiv ? 'Aktiv' : 'Inaktiv' }}</td>
+              <td>
+                @if (partei.twintAktiv) {
+                  <span class="badge badge--success">Aktiv</span>
+                } @else {
+                  <span class="badge badge--neutral">Inaktiv</span>
+                }
+              </td>
               <td>{{ partei.twintMobilenummer ?? '–' }}</td>
               <td>{{ personenAnzeige(partei.personen) }}</td>
               <td>

@@ -1,1 +1,10 @@
-<router-outlet />
+<header class="app-header">
+  <nav class="app-nav">
+    <span class="app-nav__brand">Quartierfest</span>
+    <a class="app-nav__link" routerLink="/personen" routerLinkActive="app-nav__link--active">Personen</a>
+    <a class="app-nav__link" routerLink="/parteien" routerLinkActive="app-nav__link--active">Parteien</a>
+  </nav>
+</header>
+<main>
+  <router-outlet />
+</main>
