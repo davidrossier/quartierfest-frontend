@@ -1,0 +1,103 @@
+<div class="container">
+  <h1>Parteiverwaltung</h1>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  <!-- Tabelle -->
+  <section class="tabelle-section">
+    <h2>Parteien</h2>
+    @if (ladevorgang()) {
+      <p class="ladehinweis">Wird geladen…</p>
+    } @else if (parteien().length === 0) {
+      <p class="leerhinweis">Keine Parteien vorhanden.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Adresse</th>
+            <th>Twint</th>
+            <th>Twint-Mobilenummer</th>
+            <th>Personen</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (partei of parteien(); track partei.id) {
+            <tr>
+              <td>{{ partei.adresse }}</td>
+              <td>{{ partei.twintAktiv ? 'Aktiv' : 'Inaktiv' }}</td>
+              <td>{{ partei.twintMobilenummer ?? '–' }}</td>
+              <td>{{ personenAnzeige(partei.personen) }}</td>
+              <td>
+                <button class="btn btn--danger" (click)="loeschen(partei)">Löschen</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!-- Erfassungsformular -->
+  <section class="form-section">
+    <h2>Partei erfassen</h2>
+    @if (formFehler()) {
+      <div class="alert alert--error">{{ formFehler() }}</div>
+    }
+    <form [formGroup]="erfassenForm" (ngSubmit)="speichern()">
+      <div class="form-row">
+        <div class="form-field form-field--wide">
+          <label for="adresse">Adresse *</label>
+          <input id="adresse" type="text" formControlName="adresse" />
+          @if (feldUngueltig('adresse')) {
+            <span class="feldFehler">Adresse ist erforderlich.</span>
+          }
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field form-field--checkbox">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="twintAktiv" />
+            Twint aktiv
+          </label>
+        </div>
+        @if (twintAktiv()) {
+          <div class="form-field">
+            <label for="twintMobilenummer">Twint-Mobilenummer</label>
+            <input id="twintMobilenummer" type="tel" formControlName="twintMobilenummer" />
+          </div>
+        }
+      </div>
+
+      <!-- Personenauswahl -->
+      <div class="form-group">
+        <label class="group-label">Personen zuordnen</label>
+        @if (allPersonen().length === 0) {
+          <p class="leerhinweis">Keine Personen verfügbar.</p>
+        } @else {
+          <div class="personen-auswahl">
+            @for (person of allPersonen(); track person.id) {
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="personAusgewaehlt(person.id)"
+                  (change)="togglePerson(person.id)"
+                />
+                {{ person.vorname }} {{ person.name }}
+              </label>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary">Speichern</button>
+      </div>
+    </form>
+  </section>
+</div>
