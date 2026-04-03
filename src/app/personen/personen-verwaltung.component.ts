@@ -19,6 +19,7 @@ export class PersonenVerwaltungComponent implements OnInit {
   fehler = signal<string | null>(null);
   erfolg = signal<string | null>(null);
   formFehler = signal<string | null>(null);
+  bearbeitungPerson = signal<Person | null>(null);
 
   erfassenForm = this.fb.group({
     vorname: ['', Validators.required],
@@ -47,6 +48,24 @@ export class PersonenVerwaltungComponent implements OnInit {
     });
   }
 
+  bearbeiten(person: Person): void {
+    this.bearbeitungPerson.set(person);
+    this.erfassenForm.setValue({
+      vorname: person.vorname,
+      name: person.name,
+      telefonnummer: person.telefonnummer ?? '',
+      mobilenummer: person.mobilenummer ?? '',
+      email: person.email ?? '',
+    });
+    this.formFehler.set(null);
+  }
+
+  abbrechen(): void {
+    this.bearbeitungPerson.set(null);
+    this.erfassenForm.reset();
+    this.formFehler.set(null);
+  }
+
   speichern(): void {
     if (this.erfassenForm.invalid) {
       this.erfassenForm.markAllAsTouched();
@@ -54,15 +73,30 @@ export class PersonenVerwaltungComponent implements OnInit {
     }
     this.formFehler.set(null);
     const { vorname, name, telefonnummer, mobilenummer, email } = this.erfassenForm.value;
-    this.personService
-      .create({
-        vorname: vorname!,
-        name: name!,
-        telefonnummer: telefonnummer || undefined,
-        mobilenummer: mobilenummer || undefined,
-        email: email || undefined,
-      })
-      .subscribe({
+    const payload = {
+      vorname: vorname!,
+      name: name!,
+      telefonnummer: telefonnummer || undefined,
+      mobilenummer: mobilenummer || undefined,
+      email: email || undefined,
+    };
+
+    const editPerson = this.bearbeitungPerson();
+    if (editPerson) {
+      this.personService.update(editPerson.id, payload).subscribe({
+        next: () => {
+          this.bearbeitungPerson.set(null);
+          this.erfassenForm.reset();
+          this.erfolg.set(`„${payload.vorname} ${payload.name}" wurde aktualisiert.`);
+          this.laden();
+          setTimeout(() => this.erfolg.set(null), 3000);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.formFehler.set(err.error?.message ?? 'Person konnte nicht gespeichert werden.');
+        },
+      });
+    } else {
+      this.personService.create(payload).subscribe({
         next: () => {
           this.erfassenForm.reset();
           this.erfolg.set('Person erfolgreich erfasst.');
@@ -73,6 +107,7 @@ export class PersonenVerwaltungComponent implements OnInit {
           this.formFehler.set(err.error?.message ?? 'Person konnte nicht gespeichert werden.');
         },
       });
+    }
   }
 
   loeschen(person: Person): void {

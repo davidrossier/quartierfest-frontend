@@ -16,6 +16,10 @@ export class PersonService {
     return this.http.post<Person>(this.baseUrl, payload);
   }
 
+  update(id: number, payload: PersonPayload): Observable<Person> {
+    return this.http.put<Person>(`${this.baseUrl}/${id}`, payload);
+  }
+
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
