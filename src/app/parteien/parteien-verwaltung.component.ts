@@ -24,10 +24,12 @@ export class ParteienVerwaltungComponent implements OnInit {
   fehler = signal<string | null>(null);
   erfolg = signal<string | null>(null);
   formFehler = signal<string | null>(null);
+  bearbeitungPartei = signal<Partei | null>(null);
 
   twintAktiv = computed(() => this.erfassenForm.get('twintAktiv')?.value === true);
 
   erfassenForm = this.fb.group({
+    bezeichnung: ['', Validators.required],
     adresse: ['', Validators.required],
     twintAktiv: [false],
     twintMobilenummer: [''],
@@ -70,21 +72,57 @@ export class ParteienVerwaltungComponent implements OnInit {
     return this.selectedPersonenIds().has(id);
   }
 
+  bearbeiten(partei: Partei): void {
+    this.bearbeitungPartei.set(partei);
+    this.erfassenForm.setValue({
+      bezeichnung: partei.bezeichnung,
+      adresse: partei.adresse,
+      twintAktiv: partei.twintAktiv,
+      twintMobilenummer: partei.twintMobilenummer ?? '',
+    });
+    this.selectedPersonenIds.set(new Set(partei.personen.map(p => p.id)));
+    this.formFehler.set(null);
+  }
+
+  abbrechen(): void {
+    this.bearbeitungPartei.set(null);
+    this.erfassenForm.reset({ twintAktiv: false });
+    this.selectedPersonenIds.set(new Set());
+    this.formFehler.set(null);
+  }
+
   speichern(): void {
     if (this.erfassenForm.invalid) {
       this.erfassenForm.markAllAsTouched();
       return;
     }
     this.formFehler.set(null);
-    const { adresse, twintAktiv, twintMobilenummer } = this.erfassenForm.value;
-    this.parteiService
-      .create({
-        adresse: adresse!,
-        twintAktiv: twintAktiv ?? false,
-        twintMobilenummer: twintAktiv && twintMobilenummer ? twintMobilenummer : undefined,
-        personenIds: Array.from(this.selectedPersonenIds()),
-      })
-      .subscribe({
+    const { bezeichnung, adresse, twintAktiv, twintMobilenummer } = this.erfassenForm.value;
+    const payload = {
+      bezeichnung: bezeichnung!,
+      adresse: adresse!,
+      twintAktiv: twintAktiv ?? false,
+      twintMobilenummer: twintAktiv && twintMobilenummer ? twintMobilenummer : undefined,
+      personenIds: Array.from(this.selectedPersonenIds()),
+    };
+
+    const editPartei = this.bearbeitungPartei();
+    if (editPartei) {
+      this.parteiService.update(editPartei.id, payload).subscribe({
+        next: () => {
+          this.bearbeitungPartei.set(null);
+          this.erfassenForm.reset({ twintAktiv: false });
+          this.selectedPersonenIds.set(new Set());
+          this.erfolg.set(`„${payload.bezeichnung}" wurde aktualisiert.`);
+          this.laden();
+          setTimeout(() => this.erfolg.set(null), 3000);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.formFehler.set(err.error?.message ?? 'Partei konnte nicht gespeichert werden.');
+        },
+      });
+    } else {
+      this.parteiService.create(payload).subscribe({
         next: () => {
           this.erfassenForm.reset({ twintAktiv: false });
           this.selectedPersonenIds.set(new Set());
@@ -96,10 +134,11 @@ export class ParteienVerwaltungComponent implements OnInit {
           this.formFehler.set(err.error?.message ?? 'Partei konnte nicht gespeichert werden.');
         },
       });
+    }
   }
 
   loeschen(partei: Partei): void {
-    if (!confirm(`Partei „${partei.adresse}" wirklich löschen?`)) return;
+    if (!confirm(`Partei „${partei.bezeichnung}" wirklich löschen?`)) return;
     this.parteiService.delete(partei.id).subscribe({
       next: () => {
         this.erfolg.set(`Partei „${partei.adresse}" wurde gelöscht.`);

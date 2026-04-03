@@ -35,7 +35,7 @@ Angular 21 standalone application — no NgModules. Every component uses the sta
 - `personen-verwaltung.component.ts` / `.html` / `.css` — Standalone-Component, Route `/personen`
 
 ### UC-002 Parteiverwaltung (`src/app/parteien/`)
-- `partei.model.ts` — Interfaces `Partei` (id, adresse, twintAktiv, twintMobilenummer?, personen: Person[]) und `ParteiPayload` (ohne id, mit personenIds: number[])
+- `partei.model.ts` — Interfaces `Partei` (id, bezeichnung, adresse, twintAktiv, twintMobilenummer?, personen: Person[]) und `ParteiPayload` (ohne id, mit personenIds: number[])
 - `partei.service.ts` — `getAll()`, `create()`, `delete(id)` via REST (`http://localhost:8080/api/parteien`)
 - `parteien-verwaltung.component.ts` / `.html` / `.css` — Standalone-Component, Route `/parteien`
 

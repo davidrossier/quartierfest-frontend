@@ -19,6 +19,7 @@
       <table>
         <thead>
           <tr>
+            <th>Bezeichnung</th>
             <th>Adresse</th>
             <th>Twint</th>
             <th>Twint-Mobilenummer</th>
@@ -29,6 +30,7 @@
         <tbody>
           @for (partei of parteien(); track partei.id) {
             <tr>
+              <td>{{ partei.bezeichnung }}</td>
               <td>{{ partei.adresse }}</td>
               <td>
                 @if (partei.twintAktiv) {
@@ -39,7 +41,8 @@
               </td>
               <td>{{ partei.twintMobilenummer ?? '–' }}</td>
               <td>{{ personenAnzeige(partei.personen) }}</td>
-              <td>
+              <td class="aktionen">
+                <button class="btn btn--secondary" (click)="bearbeiten(partei)">Bearbeiten</button>
                 <button class="btn btn--danger" (click)="loeschen(partei)">Löschen</button>
               </td>
             </tr>
@@ -49,14 +52,21 @@
     }
   </section>
 
-  <!-- Erfassungsformular -->
+  <!-- Erfassungsformular / Bearbeitungsformular -->
   <section class="form-section">
-    <h2>Partei erfassen</h2>
+    <h2>{{ bearbeitungPartei() ? 'Partei bearbeiten' : 'Partei erfassen' }}</h2>
     @if (formFehler()) {
       <div class="alert alert--error">{{ formFehler() }}</div>
     }
     <form [formGroup]="erfassenForm" (ngSubmit)="speichern()">
       <div class="form-row">
+        <div class="form-field form-field--wide">
+          <label for="bezeichnung">Bezeichnung *</label>
+          <input id="bezeichnung" type="text" formControlName="bezeichnung" />
+          @if (feldUngueltig('bezeichnung')) {
+            <span class="feldFehler">Bezeichnung ist erforderlich.</span>
+          }
+        </div>
         <div class="form-field form-field--wide">
           <label for="adresse">Adresse *</label>
           <input id="adresse" type="text" formControlName="adresse" />
@@ -102,6 +112,9 @@
       </div>
 
       <div class="form-actions">
+        @if (bearbeitungPartei()) {
+          <button type="button" class="btn btn--secondary" (click)="abbrechen()">Abbrechen</button>
+        }
         <button type="submit" class="btn btn--primary">Speichern</button>
       </div>
     </form>

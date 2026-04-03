@@ -16,6 +16,10 @@ export class ParteiService {
     return this.http.post<Partei>(this.baseUrl, payload);
   }
 
+  update(id: number, payload: ParteiPayload): Observable<Partei> {
+    return this.http.put<Partei>(`${this.baseUrl}/${id}`, payload);
+  }
+
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }

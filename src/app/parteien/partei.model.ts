@@ -2,6 +2,7 @@ import { Person } from '../personen/person.model';
 
 export interface Partei {
   id: number;
+  bezeichnung: string;
   adresse: string;
   twintAktiv: boolean;
   twintMobilenummer?: string;
@@ -9,6 +10,7 @@ export interface Partei {
 }
 
 export interface ParteiPayload {
+  bezeichnung: string;
   adresse: string;
   twintAktiv: boolean;
   twintMobilenummer?: string;
