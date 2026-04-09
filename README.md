@@ -1,59 +1,84 @@
-# QuartierfestFrontend
+# Quartierfest Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.2.
+Angular 21 Frontend für die Verwaltung des Quartierfests. Kommuniziert mit dem [quartierfest-backend](../quartierfest-backend) via REST.
 
-## Development server
+## Voraussetzungen
 
-To start a local development server, run:
+- Node.js 20+
+- Backend läuft auf `http://localhost:8080`
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Befehle
 
 ```bash
-ng generate component component-name
+npm start        # Dev-Server auf http://localhost:4200 (hot reload)
+npm run build    # Produktion Build (Ausgabe in dist/)
+npm test         # Unit-Tests mit Vitest
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Architektur
 
-```bash
-ng generate --help
+Angular 21 **Standalone**-Anwendung — keine NgModules. Jede Komponente verwendet die Standalone-API (`@Component` mit `imports`-Array).
+
+| Datei | Zweck |
+|---|---|
+| `src/main.ts` | Bootstrap-Einstiegspunkt |
+| `src/app/app.config.ts` | Application-Provider (HTTP, Router) |
+| `src/app/app.routes.ts` | Routen-Definitionen |
+| `src/app/app.html` | Root-Komponente mit Navigation und `<router-outlet>` |
+| `src/styles.css` | Globale Design-Tokens und gemeinsame Komponenten-Styles |
+
+## Navigationsstruktur
+
+```
+Stammdaten          → /personen, /parteien, /events
+Event-Planung       → /planung  (Einladungen, Teilnahmen, Allgemeinausgaben, Konsumationsangebote, Bestätigung)
+Event-Durchführung  → /durchfuehrung  (Konsumationsliste, Konsumationen)
+Nachbearbeitung     → /nachbearbeitung  (Abrechnung, Inkasso)
 ```
 
-## Building
+Event-abhängige Routen teilen sich den `EventKontextLayoutComponent`, der den Event-Selektor einmalig anzeigt. Der gewählte Event persistiert via `EventKontextService` über alle Gruppen hinweg.
 
-To build the project run:
+## Implementierte Features
 
-```bash
-ng build
-```
+### Stammdaten
+- **UC-001 Personenverwaltung** (`/personen`) — Erfassen, Bearbeiten, Löschen
+- **UC-002 Parteiverwaltung** (`/parteien`) — inkl. Personenzuordnung und Twint-Konfiguration
+- **Eventverwaltung** (`/events`) — Erfassen, Bearbeiten, Löschen
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### Event-Planung (`/planung/…`)
+- **UC-003 Einladungen** — Einzeln oder für alle Parteien erstellen, Rückmeldung erfassen
+- **UC-004 Teilnahmen** — Aus Anmeldungen übernehmen, effektive Personenzahl erfassen
+- **UC-005 Allgemeinausgaben** — Kosten pro Event erfassen
+- **UC-006 Konsumationsangebote** — Angebote und Preise pro Event
+- **UC-008 Bestätigung** — Versandstatus der Einladungsbestätigungen
 
-## Running unit tests
+### Event-Durchführung (`/durchfuehrung/…`)
+- **UC-009 Konsumationsliste** — Druckbare Matrix (Teilnahmen × Angebote) für händische Erfassung
+- **UC-010 Konsumationen** — Digitale Erfassung der Konsumationszahlen
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### Nachbearbeitung (`/nachbearbeitung/…`)
+- **UC-011 Abrechnung erstellen** — Automatische Berechnung (Allgemeinkosten + Konsumation pro Partei)
+- **UC-012 Abrechnung zustellen** — Zustellungskanal wählen, Zustellung markieren
+- **UC-013 Inkasso** — Zahlungen und Mahnungen erfassen, Offene-Posten-Übersicht
 
-```bash
-ng test
-```
+## Shared Utilities
 
-## Running end-to-end tests
+- `src/app/shared/sortierung.ts` — `createSortierung()` und `sortiereItems<T>()` für klickbare Spalten-Sortierung in allen Tabellen
 
-For end-to-end (e2e) testing, run:
+## Backend-Endpunkte
 
-```bash
-ng e2e
-```
+REST API auf `http://localhost:8080`. Spezifikationen unter `../quartierfest-backend/specs/`.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+| Ressource | Endpunkte |
+|---|---|
+| Personen | `GET/POST /api/persons`, `DELETE /api/persons/:id` |
+| Parteien | `GET/POST /api/parteien`, `PUT /api/parteien/:id`, `DELETE /api/parteien/:id` |
+| Events | `GET/POST /api/events`, `PUT /api/events/:id`, `DELETE /api/events/:id` |
+| Einladungen | `GET/POST /api/einladungen`, `DELETE /api/einladungen/:id` |
+| Teilnahmen | `GET/POST /api/teilnahmen`, `DELETE /api/teilnahmen/:id` |
+| Allgemeinausgaben | `GET/POST /api/allgemeinausgaben`, `DELETE /api/allgemeinausgaben/:id` |
+| Konsumationsangebote | `GET/POST /api/konsumationsangebote`, `DELETE /api/konsumationsangebote/:id` |
+| Konsumationen | `GET/POST /api/konsumationen`, `DELETE /api/konsumationen/:id` |
+| Abrechnungen | `GET/POST /api/abrechnungen`, `DELETE /api/abrechnungen/:id` |
+| Zahlungen | `GET/POST /api/zahlungen`, `DELETE /api/zahlungen/:id` |
+| Mahnungen | `GET/POST /api/mahnungen`, `DELETE /api/mahnungen/:id` |
