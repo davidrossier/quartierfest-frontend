@@ -37,9 +37,9 @@
       <table>
         <thead>
           <tr>
-            <th>Partei</th>
-            <th>Status</th>
-            <th>Personen</th>
+            <th class="sortierbar" (click)="sort.toggle('partei')">Partei{{ sort.indikator('partei') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('status')">Status{{ sort.indikator('status') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('anzahlPersonen')">Personen{{ sort.indikator('anzahlPersonen') }}</th>
             <th>Aufstellen</th>
             <th>Aufräumen</th>
             <th>Buffet</th>
@@ -47,7 +47,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (einladung of gefilterteEinladungen(); track einladung.id) {
+          @for (einladung of sortierteEinladungen(); track einladung.id) {
             <tr>
               <td>{{ einladung.partei.bezeichnung }}</td>
               <td><span [class]="statusBadgeKlasse(einladung.status)">{{ statusLabel(einladung.status) }}</span></td>

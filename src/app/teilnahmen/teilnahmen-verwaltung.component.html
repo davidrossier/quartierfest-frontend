@@ -37,9 +37,9 @@
       <table>
         <thead>
           <tr>
-            <th>Partei</th>
+            <th class="sortierbar" (click)="sort.toggle('partei')">Partei{{ sort.indikator('partei') }}</th>
             <th>Pers. (Anmeldung)</th>
-            <th>Pers. (Effektiv)</th>
+            <th class="sortierbar" (click)="sort.toggle('anzahlPersonenEffektiv')">Pers. (Effektiv){{ sort.indikator('anzahlPersonenEffektiv') }}</th>
             <th>Aufstellen</th>
             <th>Aufräumen</th>
             <th>Buffet</th>
@@ -47,7 +47,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (teilnahme of gefilterteTeilnahmen(); track teilnahme.id) {
+          @for (teilnahme of sortierteTeilnahmen(); track teilnahme.id) {
             <tr>
               <td>{{ teilnahme.einladung.partei.bezeichnung }}</td>
               <td>{{ teilnahme.einladung.anzahlPersonen ?? '–' }}</td>

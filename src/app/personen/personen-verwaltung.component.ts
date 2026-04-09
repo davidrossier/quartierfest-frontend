@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PersonService } from './person.service';
 import { Person } from './person.model';
+import { createSortierung, sortiereItems } from '../shared/sortierung';
 
 @Component({
   selector: 'app-personen-verwaltung',
@@ -15,6 +16,19 @@ export class PersonenVerwaltungComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   personen = signal<Person[]>([]);
+  readonly sort = createSortierung();
+  sortiertePersonen = computed(() =>
+    sortiereItems(this.personen(), this.sort.spalte(), this.sort.richtung(), (p, s) => {
+      switch (s) {
+        case 'vorname': return p.vorname;
+        case 'name': return p.name;
+        case 'telefonnummer': return p.telefonnummer;
+        case 'mobilenummer': return p.mobilenummer;
+        case 'email': return p.email;
+        default: return '';
+      }
+    }),
+  );
   ladevorgang = signal(false);
   fehler = signal<string | null>(null);
   erfolg = signal<string | null>(null);

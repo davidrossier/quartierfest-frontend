@@ -1,6 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { EventService } from './event.service';
 import { Event } from './event.model';
 
@@ -15,6 +16,17 @@ export class EventsVerwaltungComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   events = signal<Event[]>([]);
+  readonly sort = createSortierung();
+  sortierteEvents = computed(() =>
+    sortiereItems(this.events(), this.sort.spalte(), this.sort.richtung(), (e, s) => {
+      switch (s) {
+        case 'datum': return e.datum;
+        case 'startzeit': return e.startzeit;
+        case 'standort': return e.standort;
+        default: return '';
+      }
+    }),
+  );
   ladevorgang = signal(false);
   fehler = signal<string | null>(null);
   erfolg = signal<string | null>(null);

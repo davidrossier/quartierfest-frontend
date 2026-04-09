@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
+import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { AbrechnungService } from './abrechnung.service';
 import { TeilnahmeService } from '../teilnahmen/teilnahme.service';
 import { AllgemeinausgabeService } from '../allgemeinausgaben/allgemeinausgabe.service';
@@ -39,6 +40,19 @@ export class AbrechnungenVerwaltungComponent implements OnInit {
       a => a.teilnahme.einladung.event.id === eventId,
     );
   });
+
+  readonly sort = createSortierung();
+  sortierteAbrechnungen = computed(() =>
+    sortiereItems(this.abrechnungenFuerEvent(), this.sort.spalte(), this.sort.richtung(), (a, s) => {
+      switch (s) {
+        case 'partei': return a.teilnahme.einladung.partei.bezeichnung;
+        case 'anteilAllgemeinkosten': return a.anteilAllgemeinkosten;
+        case 'totalKonsumation': return a.totalKonsumation;
+        case 'totalBetrag': return a.totalBetrag;
+        default: return '';
+      }
+    }),
+  );
 
   readonly kanaele: { value: ZustellungsKanal; label: string }[] = [
     { value: 'TWINT', label: 'Twint' },

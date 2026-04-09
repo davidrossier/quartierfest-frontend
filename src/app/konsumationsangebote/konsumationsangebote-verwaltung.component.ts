@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { KonsumationsangebotService } from './konsumationsangebot.service';
 import { EventKontextService } from '../event-kontext/event-kontext.service';
 import { Konsumationsangebot } from './konsumationsangebot.model';
@@ -28,6 +29,17 @@ export class KonsumationsangeboteVerwaltungComponent implements OnInit {
     if (!eventId) return [];
     return this.alleAngebote().filter(a => a.event.id === eventId);
   });
+
+  readonly sort = createSortierung();
+  sortierteAngebote = computed(() =>
+    sortiereItems(this.gefilterteAngebote(), this.sort.spalte(), this.sort.richtung(), (a, s) => {
+      switch (s) {
+        case 'bezeichnung': return a.bezeichnung;
+        case 'preis': return a.preis;
+        default: return '';
+      }
+    }),
+  );
 
   erfassenForm = this.fb.group({
     bezeichnung: ['', Validators.required],

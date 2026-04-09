@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { AllgemeinausgabeService } from './allgemeinausgabe.service';
 import { EventKontextService } from '../event-kontext/event-kontext.service';
 import { Allgemeinausgabe } from './allgemeinausgabe.model';
@@ -31,6 +32,18 @@ export class AllgemeinausgabenVerwaltungComponent implements OnInit {
 
   gesamtbetrag = computed(() =>
     this.gefilterteAusgaben().reduce((sum, a) => sum + a.betrag, 0),
+  );
+
+  readonly sort = createSortierung();
+  sortierteAusgaben = computed(() =>
+    sortiereItems(this.gefilterteAusgaben(), this.sort.spalte(), this.sort.richtung(), (a, s) => {
+      switch (s) {
+        case 'beschreibung': return a.beschreibung;
+        case 'herkunft': return a.herkunft;
+        case 'betrag': return a.betrag;
+        default: return '';
+      }
+    }),
   );
 
   erfassenForm = this.fb.group({

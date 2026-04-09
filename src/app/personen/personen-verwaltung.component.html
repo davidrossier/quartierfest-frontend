@@ -19,16 +19,16 @@
       <table>
         <thead>
           <tr>
-            <th>Vorname</th>
-            <th>Name</th>
-            <th>Telefon</th>
-            <th>Mobile</th>
-            <th>E-Mail</th>
+            <th class="sortierbar" (click)="sort.toggle('vorname')">Vorname{{ sort.indikator('vorname') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('name')">Name{{ sort.indikator('name') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('telefonnummer')">Telefon{{ sort.indikator('telefonnummer') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('mobilenummer')">Mobile{{ sort.indikator('mobilenummer') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('email')">E-Mail{{ sort.indikator('email') }}</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          @for (person of personen(); track person.id) {
+          @for (person of sortiertePersonen(); track person.id) {
             <tr>
               <td>{{ person.vorname }}</td>
               <td>{{ person.name }}</td>

@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
+import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { EinladungService } from './einladung.service';
 import { ParteiService } from '../parteien/partei.service';
 import { EventKontextService } from '../event-kontext/event-kontext.service';
@@ -33,6 +34,18 @@ export class EinladungenVerwaltungComponent implements OnInit {
     if (!eventId) return [];
     return this.alleEinladungen().filter(e => e.event.id === eventId);
   });
+
+  readonly sort = createSortierung();
+  sortierteEinladungen = computed(() =>
+    sortiereItems(this.gefilterteEinladungen(), this.sort.spalte(), this.sort.richtung(), (e, s) => {
+      switch (s) {
+        case 'partei': return e.partei.bezeichnung;
+        case 'status': return e.status;
+        case 'anzahlPersonen': return e.anzahlPersonen;
+        default: return '';
+      }
+    }),
+  );
 
   nichtEingeladeneParteien = computed(() => {
     const eventId = this.eventKontext.selectedEventId();

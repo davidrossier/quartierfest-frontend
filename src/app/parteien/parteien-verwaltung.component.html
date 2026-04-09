@@ -19,16 +19,16 @@
       <table>
         <thead>
           <tr>
-            <th>Bezeichnung</th>
-            <th>Adresse</th>
-            <th>Twint</th>
-            <th>Twint-Mobilenummer</th>
+            <th class="sortierbar" (click)="sort.toggle('bezeichnung')">Bezeichnung{{ sort.indikator('bezeichnung') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('adresse')">Adresse{{ sort.indikator('adresse') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('twintAktiv')">Twint{{ sort.indikator('twintAktiv') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('twintMobilenummer')">Twint-Mobilenummer{{ sort.indikator('twintMobilenummer') }}</th>
             <th>Personen</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          @for (partei of parteien(); track partei.id) {
+          @for (partei of sortierteParteien(); track partei.id) {
             <tr>
               <td>{{ partei.bezeichnung }}</td>
               <td>{{ partei.adresse }}</td>

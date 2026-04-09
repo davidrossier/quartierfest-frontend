@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:www.galaxus.ch)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(xargs grep:*)"
     ]
   }
 }

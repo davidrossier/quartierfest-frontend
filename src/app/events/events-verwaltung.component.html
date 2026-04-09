@@ -19,9 +19,9 @@
       <table>
         <thead>
           <tr>
-            <th>Datum</th>
-            <th>Startzeit</th>
-            <th>Standort</th>
+            <th class="sortierbar" (click)="sort.toggle('datum')">Datum{{ sort.indikator('datum') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('startzeit')">Startzeit{{ sort.indikator('startzeit') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('standort')">Standort{{ sort.indikator('standort') }}</th>
             <th>Alternativer Standort</th>
             <th>Aufstellzeit</th>
             <th>Aufräumzeit</th>
@@ -29,7 +29,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (event of events(); track event.id) {
+          @for (event of sortierteEvents(); track event.id) {
             <tr>
               <td>{{ datumAnzeige(event.datum) }}</td>
               <td>{{ zeitAnzeige(event.startzeit) }}</td>

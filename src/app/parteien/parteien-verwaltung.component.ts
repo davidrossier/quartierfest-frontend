@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ParteiService } from './partei.service';
@@ -18,6 +19,18 @@ export class ParteienVerwaltungComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   parteien = signal<Partei[]>([]);
+  readonly sort = createSortierung();
+  sortierteParteien = computed(() =>
+    sortiereItems(this.parteien(), this.sort.spalte(), this.sort.richtung(), (p, s) => {
+      switch (s) {
+        case 'bezeichnung': return p.bezeichnung;
+        case 'adresse': return p.adresse;
+        case 'twintAktiv': return p.twintAktiv ? 'Ja' : 'Nein';
+        case 'twintMobilenummer': return p.twintMobilenummer;
+        default: return '';
+      }
+    }),
+  );
   allPersonen = signal<Person[]>([]);
   selectedPersonenIds = signal<Set<number>>(new Set());
   ladevorgang = signal(false);

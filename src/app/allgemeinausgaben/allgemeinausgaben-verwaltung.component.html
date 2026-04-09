@@ -21,14 +21,14 @@
       <table>
         <thead>
           <tr>
-            <th>Beschreibung</th>
-            <th>Herkunft</th>
-            <th>Betrag</th>
+            <th class="sortierbar" (click)="sort.toggle('beschreibung')">Beschreibung{{ sort.indikator('beschreibung') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('herkunft')">Herkunft{{ sort.indikator('herkunft') }}</th>
+            <th class="sortierbar" (click)="sort.toggle('betrag')">Betrag{{ sort.indikator('betrag') }}</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          @for (ausgabe of gefilterteAusgaben(); track ausgabe.id) {
+          @for (ausgabe of sortierteAusgaben(); track ausgabe.id) {
             <tr>
               <td>{{ ausgabe.beschreibung }}</td>
               <td class="herkunft-zelle">{{ ausgabe.herkunft ?? '–' }}</td>

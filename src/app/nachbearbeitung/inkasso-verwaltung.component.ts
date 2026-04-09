@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
+import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { AbrechnungService } from './abrechnung.service';
 import { ZahlungService } from './zahlung.service';
 import { MahnungService } from './mahnung.service';
@@ -52,6 +53,17 @@ export class InkassoVerwaltungComponent implements OnInit {
     if (!eventId) return [];
     return this.alleAbrechnungen().filter(a => a.teilnahme.einladung.event.id === eventId);
   });
+
+  readonly sort = createSortierung();
+  sortierteAbrechnungen = computed(() =>
+    sortiereItems(this.abrechnungenFuerEvent(), this.sort.spalte(), this.sort.richtung(), (a, s) => {
+      switch (s) {
+        case 'partei': return a.teilnahme.einladung.partei.bezeichnung;
+        case 'totalBetrag': return a.totalBetrag;
+        default: return '';
+      }
+    }),
+  );
 
   zahlungenByAbrechnung = computed(() => {
     const abrIds = new Set(this.abrechnungenFuerEvent().map(a => a.id));

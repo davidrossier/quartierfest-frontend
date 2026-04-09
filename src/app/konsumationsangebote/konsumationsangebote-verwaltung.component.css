@@ -82,12 +82,3 @@ input[type='number']:focus {
   box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
 }
 
-.btn--secondary {
-  background: transparent;
-  color: var(--color-text-primary);
-  border-color: var(--color-border);
-}
-
-.btn--secondary:hover {
-  background: var(--color-surface);
-}

@@ -18,8 +18,8 @@
     <table class="inkasso-tabelle">
       <thead>
         <tr>
-          <th>Partei</th>
-          <th>Total</th>
+          <th class="sortierbar" (click)="sort.toggle('partei')">Partei{{ sort.indikator('partei') }}</th>
+          <th class="sortierbar" (click)="sort.toggle('totalBetrag')">Total{{ sort.indikator('totalBetrag') }}</th>
           <th>Bezahlt</th>
           <th>Offen</th>
           <th>Status</th>
@@ -27,7 +27,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (abrechnung of abrechnungenFuerEvent(); track abrechnung.id) {
+        @for (abrechnung of sortierteAbrechnungen(); track abrechnung.id) {
           <tr class="haupt-zeile" [class.expandiert]="expandierteId() === abrechnung.id">
             <td>{{ abrechnung.teilnahme.einladung.partei.bezeichnung }}</td>
             <td class="betrag-zelle">{{ betragAnzeige(abrechnung.totalBetrag) }}</td>
@@ -66,7 +66,7 @@
                     <div class="detail-section__header">
                       <h3>Zahlungen</h3>
                       @if (aktiveZahlungId() !== abrechnung.id) {
-                        <button class="btn btn--primary btn--sm" type="button" (click)="zahlungFormOeffnen(abrechnung.id)">
+                        <button class="btn btn--primary" type="button" (click)="zahlungFormOeffnen(abrechnung.id)">
                           Zahlung erfassen
                         </button>
                       }
@@ -86,7 +86,7 @@
                               <td>{{ zahlung.zahlungskanal }}</td>
                               <td class="betrag-zelle">{{ betragAnzeige(zahlung.betrag) }}</td>
                               <td class="aktionen">
-                                <button class="btn btn--danger btn--sm" type="button" (click)="zahlungLoeschen(zahlung)">Löschen</button>
+                                <button class="btn btn--danger" type="button" (click)="zahlungLoeschen(zahlung)">Löschen</button>
                               </td>
                             </tr>
                           }
@@ -128,8 +128,8 @@
                             </div>
                           </div>
                           <div class="form-actions">
-                            <button type="button" class="btn btn--secondary btn--sm" (click)="aktiveZahlungId.set(null)">Abbrechen</button>
-                            <button type="submit" class="btn btn--primary btn--sm">Speichern</button>
+                            <button type="button" class="btn btn--secondary" (click)="aktiveZahlungId.set(null)">Abbrechen</button>
+                            <button type="submit" class="btn btn--primary">Speichern</button>
                           </div>
                         </form>
                       </div>
@@ -141,7 +141,7 @@
                     <div class="detail-section__header">
                       <h3>Mahnungen</h3>
                       @if (aktiveMahnungId() !== abrechnung.id) {
-                        <button class="btn btn--secondary btn--sm" type="button" (click)="mahnungFormOeffnen(abrechnung.id)">
+                        <button class="btn btn--secondary" type="button" (click)="mahnungFormOeffnen(abrechnung.id)">
                           Mahnung erfassen
                         </button>
                       }
@@ -160,7 +160,7 @@
                               <td>{{ datumAnzeige(mahnung.datum) }}</td>
                               <td>{{ mahnung.bemerkung ?? '–' }}</td>
                               <td class="aktionen">
-                                <button class="btn btn--danger btn--sm" type="button" (click)="mahnungLoeschen(mahnung)">Löschen</button>
+                                <button class="btn btn--danger" type="button" (click)="mahnungLoeschen(mahnung)">Löschen</button>
                               </td>
                             </tr>
                           }
@@ -188,8 +188,8 @@
                             </div>
                           </div>
                           <div class="form-actions">
-                            <button type="button" class="btn btn--secondary btn--sm" (click)="aktiveMahnungId.set(null)">Abbrechen</button>
-                            <button type="submit" class="btn btn--primary btn--sm">Speichern</button>
+                            <button type="button" class="btn btn--secondary" (click)="aktiveMahnungId.set(null)">Abbrechen</button>
+                            <button type="submit" class="btn btn--primary">Speichern</button>
                           </div>
                         </form>
                       </div>

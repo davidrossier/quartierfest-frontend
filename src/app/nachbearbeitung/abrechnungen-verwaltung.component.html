@@ -31,17 +31,17 @@
     <table>
       <thead>
         <tr>
-          <th>Partei</th>
-          <th>Allgemeinkosten</th>
-          <th>Konsumation</th>
-          <th>Total</th>
+          <th class="sortierbar" (click)="sort.toggle('partei')">Partei{{ sort.indikator('partei') }}</th>
+          <th class="sortierbar" (click)="sort.toggle('anteilAllgemeinkosten')">Allgemeinkosten{{ sort.indikator('anteilAllgemeinkosten') }}</th>
+          <th class="sortierbar" (click)="sort.toggle('totalKonsumation')">Konsumation{{ sort.indikator('totalKonsumation') }}</th>
+          <th class="sortierbar" (click)="sort.toggle('totalBetrag')">Total{{ sort.indikator('totalBetrag') }}</th>
           <th>Kanal</th>
           <th>Zustellung</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        @for (abrechnung of abrechnungenFuerEvent(); track abrechnung.id) {
+        @for (abrechnung of sortierteAbrechnungen(); track abrechnung.id) {
           <tr>
             <td>
               <div class="partei-name">{{ abrechnung.teilnahme.einladung.partei.bezeichnung }}</div>
@@ -66,7 +66,7 @@
                   }
                 </select>
                 @if (kanalGeaendert(abrechnung)) {
-                  <button class="btn btn--secondary btn--sm" type="button" (click)="kanalSpeichern(abrechnung)">
+                  <button class="btn btn--secondary" type="button" (click)="kanalSpeichern(abrechnung)">
                     Speichern
                   </button>
                 }
@@ -76,7 +76,7 @@
               @if (abrechnung.zustellungsDatum) {
                 <span class="badge badge--success">Zugestellt {{ datumAnzeige(abrechnung.zustellungsDatum) }}</span>
               } @else {
-                <button class="btn btn--secondary btn--sm" type="button" (click)="alsZugestelltMarkieren(abrechnung)">
+                <button class="btn btn--secondary" type="button" (click)="alsZugestelltMarkieren(abrechnung)">
                   Als zugestellt markieren
                 </button>
               }

@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
+import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { TeilnahmeService } from './teilnahme.service';
 import { EinladungService } from '../einladungen/einladung.service';
 import { EventKontextService } from '../event-kontext/event-kontext.service';
@@ -33,6 +34,17 @@ export class TeilnahmenVerwaltungComponent implements OnInit {
     if (!eventId) return [];
     return this.alleTeilnahmen().filter(t => t.einladung.event.id === eventId);
   });
+
+  readonly sort = createSortierung();
+  sortierteTeilnahmen = computed(() =>
+    sortiereItems(this.gefilterteTeilnahmen(), this.sort.spalte(), this.sort.richtung(), (t, s) => {
+      switch (s) {
+        case 'partei': return t.einladung.partei.bezeichnung;
+        case 'anzahlPersonenEffektiv': return t.anzahlPersonenEffektiv;
+        default: return '';
+      }
+    }),
+  );
 
   einladungenOhneTeilnahme = computed(() => {
     const eventId = this.eventKontext.selectedEventId();
