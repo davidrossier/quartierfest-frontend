@@ -1,0 +1,129 @@
+<div class="container">
+  <h1>Teilnahmen</h1>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  <!-- Tabelle -->
+  <section class="tabelle-section">
+    <div class="tabelle-header">
+      <h2>Teilnahmen</h2>
+      @if (eventKontext.selectedEventId()) {
+        <button
+          type="button"
+          class="btn btn--secondary"
+          [disabled]="einladungenOhneTeilnahme().length === 0"
+          (click)="teilnahmenAusEinladungenErstellen()"
+        >
+          Aus Anmeldungen erstellen
+          @if (einladungenOhneTeilnahme().length > 0) {
+            <span class="badge badge--neutral">{{ einladungenOhneTeilnahme().length }}</span>
+          }
+        </button>
+      }
+    </div>
+
+    @if (!eventKontext.selectedEventId()) {
+      <p class="leerhinweis">Bitte oben einen Event auswählen.</p>
+    } @else if (ladevorgang()) {
+      <p class="ladehinweis">Wird geladen…</p>
+    } @else if (gefilterteTeilnahmen().length === 0) {
+      <p class="leerhinweis">Keine Teilnahmen für diesen Event. Bitte zuerst Anmeldungen erfassen.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Partei</th>
+            <th>Pers. (Anmeldung)</th>
+            <th>Pers. (Effektiv)</th>
+            <th>Aufstellen</th>
+            <th>Aufräumen</th>
+            <th>Buffet</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (teilnahme of gefilterteTeilnahmen(); track teilnahme.id) {
+            <tr>
+              <td>{{ teilnahme.einladung.partei.bezeichnung }}</td>
+              <td>{{ teilnahme.einladung.anzahlPersonen ?? '–' }}</td>
+              <td>
+                @if (teilnahme.anzahlPersonenEffektiv != null) {
+                  <strong>{{ teilnahme.anzahlPersonenEffektiv }}</strong>
+                } @else {
+                  <span class="text-muted">–</span>
+                }
+              </td>
+              <td>{{ teilnahme.hilftAufstellen === true ? 'Ja' : teilnahme.hilftAufstellen === false ? 'Nein' : '–' }}</td>
+              <td>{{ teilnahme.hilftAufraumen === true ? 'Ja' : teilnahme.hilftAufraumen === false ? 'Nein' : '–' }}</td>
+              <td>{{ buffetLabel(teilnahme.buffetBeitrag) }}</td>
+              <td class="aktionen">
+                <button class="btn btn--secondary" (click)="bearbeiten(teilnahme)">Bearbeiten</button>
+                <button class="btn btn--danger" (click)="loeschen(teilnahme)">Löschen</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!-- Bearbeitungsformular -->
+  @if (bearbeitungTeilnahme()) {
+    <section class="form-section">
+      <h2>Teilnahme bearbeiten</h2>
+      <p class="partei-info">
+        Partei: <strong>{{ bearbeitungTeilnahme()!.einladung.partei.bezeichnung }}</strong>
+      </p>
+
+      @if (formFehler()) {
+        <div class="alert alert--error">{{ formFehler() }}</div>
+      }
+
+      <form [formGroup]="erfassenForm" (ngSubmit)="speichern()">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="anzahlPersonenEffektiv">Effektive Anzahl Personen</label>
+            <input id="anzahlPersonenEffektiv" type="number" min="0" formControlName="anzahlPersonenEffektiv" />
+          </div>
+          <div class="form-field form-field--checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="hilftAufstellen" />
+              Hilft beim Aufstellen
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="hilftAufraumen" />
+              Hilft beim Aufräumen
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="buffetBeitrag">Buffet-Beitrag</label>
+            <select id="buffetBeitrag" formControlName="buffetBeitrag">
+              <option value="KEINER">Keiner</option>
+              <option value="SALAT">Salat</option>
+              <option value="BROT_ZOPF">Brot/Zopf</option>
+              <option value="DESSERT">Dessert</option>
+              <option value="WEITERE">Weitere</option>
+            </select>
+          </div>
+          @if (isWeitere()) {
+            <div class="form-field form-field--wide">
+              <label for="buffetBeitragBeschreibung">Beschreibung</label>
+              <input id="buffetBeitragBeschreibung" type="text" formControlName="buffetBeitragBeschreibung" />
+            </div>
+          }
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn--secondary" (click)="abbrechen()">Abbrechen</button>
+          <button type="submit" class="btn btn--primary">Speichern</button>
+        </div>
+      </form>
+    </section>
+  }
+</div>

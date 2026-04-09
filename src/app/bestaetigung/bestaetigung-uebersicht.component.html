@@ -1,0 +1,147 @@
+<div class="container">
+  <h1>Bestätigung versenden</h1>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  @if (!eventKontext.selectedEventId()) {
+    <p class="leerhinweis">Bitte oben einen Event auswählen.</p>
+  } @else {
+    <!-- Warnung: Kein Konsumationsangebot (E1) -->
+    @if (keinAngebot()) {
+      <div class="alert alert--warning">
+        Kein Konsumationsangebot für diesen Event erfasst. Bitte zuerst das Angebot pflegen.
+      </div>
+    }
+
+    <!-- Bestätigungsübersicht -->
+    @if (eventKontext.selectedEvent(); as event) {
+      <section class="uebersicht-section">
+        <h2>Bestätigungsinhalt</h2>
+
+        <div class="uebersicht-card">
+          <h3>Event-Details</h3>
+          <dl class="detail-liste">
+            <div class="detail-zeile">
+              <dt>Standort</dt>
+              <dd>{{ event.standort }}</dd>
+            </div>
+            @if (event.alternativerStandort) {
+              <div class="detail-zeile">
+                <dt>Alternativer Standort</dt>
+                <dd>{{ event.alternativerStandort }}</dd>
+              </div>
+            }
+            <div class="detail-zeile">
+              <dt>Startzeit</dt>
+              <dd>{{ zeitAnzeige(event.startzeit) }}</dd>
+            </div>
+            @if (event.zeitAufstellen) {
+              <div class="detail-zeile">
+                <dt>Aufstellzeit</dt>
+                <dd>{{ event.zeitAufstellen }}</dd>
+              </div>
+            }
+            @if (event.zeitAufraumen) {
+              <div class="detail-zeile">
+                <dt>Aufräumzeit</dt>
+                <dd>{{ event.zeitAufraumen }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+
+        <div class="uebersicht-karten-reihe">
+          <div class="uebersicht-card">
+            <h3>Buffet-Beiträge</h3>
+            @if (buffetZusammenstellung().length === 0) {
+              <p class="leerhinweis-klein">Keine Buffet-Beiträge angemeldet.</p>
+            } @else {
+              <dl class="detail-liste">
+                @for (gruppe of buffetZusammenstellung(); track gruppe.beitrag) {
+                  <div class="detail-zeile">
+                    <dt>{{ buffetLabel(gruppe.beitrag) }}</dt>
+                    <dd>{{ gruppe.parteien.join(', ') }}</dd>
+                  </div>
+                }
+              </dl>
+            }
+          </div>
+
+          <div class="uebersicht-card">
+            <h3>Konsumationsangebot</h3>
+            @if (angeboteFuerEvent().length === 0) {
+              <p class="leerhinweis-klein">Kein Angebot erfasst.</p>
+            } @else {
+              <table class="angebot-tabelle">
+                <tbody>
+                  @for (angebot of angeboteFuerEvent(); track angebot.id) {
+                    <tr>
+                      <td>{{ angebot.bezeichnung }}</td>
+                      <td class="preis-zelle">{{ preisAnzeige(angebot.preis) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- Einladungen markieren -->
+    <section class="markierung-section">
+      <div class="markierung-header">
+        <h2>Bestätigungen markieren</h2>
+        @if (unversendeteAnzahl() > 0) {
+          <button type="button" class="btn btn--primary" (click)="alleMarkieren()">
+            Alle als versendet markieren ({{ unversendeteAnzahl() }})
+          </button>
+        }
+      </div>
+
+      @if (ladevorgang()) {
+        <p class="ladehinweis">Wird geladen…</p>
+      } @else if (angemeldeteEinladungen().length === 0) {
+        <p class="leerhinweis">Keine angemeldeten Parteien für diesen Event.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>Partei</th>
+              <th>Personen</th>
+              <th>Bestätigung</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (einladung of angemeldeteEinladungen(); track einladung.id) {
+              <tr>
+                <td>{{ einladung.partei.bezeichnung }}</td>
+                <td>{{ einladung.anzahlPersonen ?? '–' }}</td>
+                <td>
+                  @if (einladung.bestaetigungVersendet) {
+                    <span class="badge badge--success">Versendet</span>
+                  } @else {
+                    <span class="badge badge--neutral">Ausstehend</span>
+                  }
+                </td>
+                <td class="aktionen">
+                  @if (!einladung.bestaetigungVersendet) {
+                    <button class="btn btn--secondary" (click)="markiereVersendet(einladung)">
+                      Als versendet markieren
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  }
+</div>

@@ -1,0 +1,207 @@
+<div class="container">
+  <h1>Inkasso</h1>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  @if (!eventKontext.selectedEventId()) {
+    <p class="leerhinweis">Bitte oben einen Event auswählen.</p>
+  } @else if (ladevorgang()) {
+    <p class="ladehinweis">Wird geladen…</p>
+  } @else if (abrechnungenFuerEvent().length === 0) {
+    <p class="leerhinweis">Keine Abrechnungen für diesen Event. Bitte zuerst Abrechnungen erstellen.</p>
+  } @else {
+    <table class="inkasso-tabelle">
+      <thead>
+        <tr>
+          <th>Partei</th>
+          <th>Total</th>
+          <th>Bezahlt</th>
+          <th>Offen</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (abrechnung of abrechnungenFuerEvent(); track abrechnung.id) {
+          <tr class="haupt-zeile" [class.expandiert]="expandierteId() === abrechnung.id">
+            <td>{{ abrechnung.teilnahme.einladung.partei.bezeichnung }}</td>
+            <td class="betrag-zelle">{{ betragAnzeige(abrechnung.totalBetrag) }}</td>
+            <td class="betrag-zelle">{{ betragAnzeige(bezahlt(abrechnung.id)) }}</td>
+            <td class="betrag-zelle" [class.offen-positiv]="offen(abrechnung) > 0" [class.offen-null]="offen(abrechnung) <= 0">
+              {{ betragAnzeige(offen(abrechnung)) }}
+            </td>
+            <td>
+              @if (offen(abrechnung) <= 0) {
+                <span class="badge badge--success">Bezahlt</span>
+              } @else if (bezahlt(abrechnung.id) > 0) {
+                <span class="badge badge--warning">Teilzahlung</span>
+              } @else {
+                <span class="badge badge--neutral">Offen</span>
+              }
+              @if ((mahnungenByAbrechnung()[abrechnung.id]?.length ?? 0) > 0) {
+                <span class="badge badge--error mahnung-badge">
+                  {{ mahnungenByAbrechnung()[abrechnung.id].length }} Mahnung(en)
+                </span>
+              }
+            </td>
+            <td class="aktionen">
+              <button class="btn btn--secondary" type="button" (click)="toggleExpand(abrechnung.id)">
+                {{ expandierteId() === abrechnung.id ? 'Schliessen' : 'Details' }}
+              </button>
+            </td>
+          </tr>
+
+          @if (expandierteId() === abrechnung.id) {
+            <tr class="detail-zeile">
+              <td colspan="6">
+                <div class="detail-panel">
+
+                  <!-- Zahlungen -->
+                  <div class="detail-section">
+                    <div class="detail-section__header">
+                      <h3>Zahlungen</h3>
+                      @if (aktiveZahlungId() !== abrechnung.id) {
+                        <button class="btn btn--primary btn--sm" type="button" (click)="zahlungFormOeffnen(abrechnung.id)">
+                          Zahlung erfassen
+                        </button>
+                      }
+                    </div>
+
+                    @if ((zahlungenByAbrechnung()[abrechnung.id]?.length ?? 0) === 0) {
+                      <p class="leerhinweis-klein">Keine Zahlungen erfasst.</p>
+                    } @else {
+                      <table class="sub-tabelle">
+                        <thead>
+                          <tr><th>Datum</th><th>Kanal</th><th>Betrag</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                          @for (zahlung of zahlungenByAbrechnung()[abrechnung.id]; track zahlung.id) {
+                            <tr>
+                              <td>{{ datumAnzeige(zahlung.datum) }}</td>
+                              <td>{{ zahlung.zahlungskanal }}</td>
+                              <td class="betrag-zelle">{{ betragAnzeige(zahlung.betrag) }}</td>
+                              <td class="aktionen">
+                                <button class="btn btn--danger btn--sm" type="button" (click)="zahlungLoeschen(zahlung)">Löschen</button>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+
+                    @if (aktiveZahlungId() === abrechnung.id) {
+                      <div class="inline-form">
+                        @if (zahlungFehler()) {
+                          <div class="alert alert--error">{{ zahlungFehler() }}</div>
+                        }
+                        @if (offen(abrechnung) < 0) {
+                          <div class="alert alert--warning">Achtung: Bereits überbezahlt ({{ betragAnzeige(offen(abrechnung) * -1) }}).</div>
+                        }
+                        <form [formGroup]="zahlungForm" (ngSubmit)="zahlungSpeichern(abrechnung)">
+                          <div class="form-row">
+                            <div class="form-field">
+                              <label for="zahlungskanal">Kanal *</label>
+                              <select id="zahlungskanal" formControlName="zahlungskanal">
+                                <option value="TWINT">Twint</option>
+                                <option value="UEBERWEISUNG">Überweisung</option>
+                                <option value="BAR">Bar</option>
+                              </select>
+                            </div>
+                            <div class="form-field">
+                              <label for="zahlung-datum">Datum *</label>
+                              <input id="zahlung-datum" type="date" formControlName="datum" />
+                              @if (zahlungsFeldUngueltig('datum')) {
+                                <span class="feldFehler">Datum ist erforderlich.</span>
+                              }
+                            </div>
+                            <div class="form-field">
+                              <label for="zahlung-betrag">Betrag (CHF) *</label>
+                              <input id="zahlung-betrag" type="number" min="0.01" step="0.05" formControlName="betrag" />
+                              @if (zahlungsFeldUngueltig('betrag')) {
+                                <span class="feldFehler">Betrag ist erforderlich (mind. 0.01).</span>
+                              }
+                            </div>
+                          </div>
+                          <div class="form-actions">
+                            <button type="button" class="btn btn--secondary btn--sm" (click)="aktiveZahlungId.set(null)">Abbrechen</button>
+                            <button type="submit" class="btn btn--primary btn--sm">Speichern</button>
+                          </div>
+                        </form>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Mahnungen -->
+                  <div class="detail-section">
+                    <div class="detail-section__header">
+                      <h3>Mahnungen</h3>
+                      @if (aktiveMahnungId() !== abrechnung.id) {
+                        <button class="btn btn--secondary btn--sm" type="button" (click)="mahnungFormOeffnen(abrechnung.id)">
+                          Mahnung erfassen
+                        </button>
+                      }
+                    </div>
+
+                    @if ((mahnungenByAbrechnung()[abrechnung.id]?.length ?? 0) === 0) {
+                      <p class="leerhinweis-klein">Keine Mahnungen erfasst.</p>
+                    } @else {
+                      <table class="sub-tabelle">
+                        <thead>
+                          <tr><th>Datum</th><th>Bemerkung</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                          @for (mahnung of mahnungenByAbrechnung()[abrechnung.id]; track mahnung.id) {
+                            <tr>
+                              <td>{{ datumAnzeige(mahnung.datum) }}</td>
+                              <td>{{ mahnung.bemerkung ?? '–' }}</td>
+                              <td class="aktionen">
+                                <button class="btn btn--danger btn--sm" type="button" (click)="mahnungLoeschen(mahnung)">Löschen</button>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+
+                    @if (aktiveMahnungId() === abrechnung.id) {
+                      <div class="inline-form">
+                        @if (mahnungFehler()) {
+                          <div class="alert alert--error">{{ mahnungFehler() }}</div>
+                        }
+                        <form [formGroup]="mahnungForm" (ngSubmit)="mahnungSpeichern(abrechnung)">
+                          <div class="form-row">
+                            <div class="form-field">
+                              <label for="mahnung-datum">Datum *</label>
+                              <input id="mahnung-datum" type="date" formControlName="datum" />
+                              @if (mahnungsFeldUngueltig('datum')) {
+                                <span class="feldFehler">Datum ist erforderlich.</span>
+                              }
+                            </div>
+                            <div class="form-field form-field--wide">
+                              <label for="mahnung-bemerkung">Bemerkung</label>
+                              <input id="mahnung-bemerkung" type="text" formControlName="bemerkung" />
+                            </div>
+                          </div>
+                          <div class="form-actions">
+                            <button type="button" class="btn btn--secondary btn--sm" (click)="aktiveMahnungId.set(null)">Abbrechen</button>
+                            <button type="submit" class="btn btn--primary btn--sm">Speichern</button>
+                          </div>
+                        </form>
+                      </div>
+                    }
+                  </div>
+
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  }
+</div>

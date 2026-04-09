@@ -1,0 +1,96 @@
+<div class="container">
+  <h1>Allgemeinausgaben</h1>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  <!-- Tabelle -->
+  <section class="tabelle-section">
+    <h2>Ausgaben</h2>
+    @if (!eventKontext.selectedEventId()) {
+      <p class="leerhinweis">Bitte oben einen Event auswählen.</p>
+    } @else if (ladevorgang()) {
+      <p class="ladehinweis">Wird geladen…</p>
+    } @else if (gefilterteAusgaben().length === 0) {
+      <p class="leerhinweis">Noch keine Ausgaben für diesen Event.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Beschreibung</th>
+            <th>Herkunft</th>
+            <th>Betrag</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ausgabe of gefilterteAusgaben(); track ausgabe.id) {
+            <tr>
+              <td>{{ ausgabe.beschreibung }}</td>
+              <td class="herkunft-zelle">{{ ausgabe.herkunft ?? '–' }}</td>
+              <td class="betrag-zelle">{{ betragAnzeige(ausgabe.betrag) }}</td>
+              <td class="aktionen">
+                <button class="btn btn--secondary" (click)="bearbeiten(ausgabe)">Bearbeiten</button>
+                <button class="btn btn--danger" (click)="loeschen(ausgabe)">Löschen</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr class="gesamt-zeile">
+            <td colspan="2" class="gesamt-label">Total</td>
+            <td class="betrag-zelle">{{ betragAnzeige(gesamtbetrag()) }}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    }
+  </section>
+
+  <!-- Formular -->
+  <section class="form-section" [class.disabled]="!eventKontext.selectedEventId()">
+    <h2>{{ bearbeitungAusgabe() ? 'Ausgabe bearbeiten' : 'Neue Ausgabe erfassen' }}</h2>
+
+    @if (!eventKontext.selectedEventId()) {
+      <p class="hinweis">Bitte oben einen Event auswählen.</p>
+    } @else {
+      @if (formFehler()) {
+        <div class="alert alert--error">{{ formFehler() }}</div>
+      }
+      <form [formGroup]="erfassenForm" (ngSubmit)="speichern()">
+        <div class="form-row">
+          <div class="form-field form-field--wide">
+            <label for="beschreibung">Beschreibung *</label>
+            <input id="beschreibung" type="text" formControlName="beschreibung" />
+            @if (feldUngueltig('beschreibung')) {
+              <span class="feldFehler">Beschreibung ist erforderlich.</span>
+            }
+          </div>
+          <div class="form-field betrag-field">
+            <label for="betrag">Betrag (CHF) *</label>
+            <input id="betrag" type="number" min="0" step="0.05" formControlName="betrag" />
+            @if (feldUngueltig('betrag')) {
+              <span class="feldFehler">Betrag ist erforderlich und muss ≥ 0 sein.</span>
+            }
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field form-field--wide">
+            <label for="herkunft">Herkunft</label>
+            <input id="herkunft" type="text" formControlName="herkunft" />
+          </div>
+        </div>
+        <div class="form-actions">
+          @if (bearbeitungAusgabe()) {
+            <button type="button" class="btn btn--secondary" (click)="abbrechen()">Abbrechen</button>
+          }
+          <button type="submit" class="btn btn--primary">Speichern</button>
+        </div>
+      </form>
+    }
+  </section>
+</div>

@@ -1,0 +1,172 @@
+<div class="container">
+  <h1>Einladungen</h1>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  <!-- Tabelle -->
+  <section class="tabelle-section">
+    <div class="tabelle-header">
+      <h2>Einladungen</h2>
+      @if (eventKontext.selectedEventId()) {
+        <button
+          type="button"
+          class="btn btn--secondary"
+          [disabled]="nichtEingeladeneParteien().length === 0"
+          (click)="einladungenFuerAlleErstellen()"
+        >
+          Für alle Parteien erstellen
+          @if (nichtEingeladeneParteien().length > 0) {
+            <span class="badge badge--neutral">{{ nichtEingeladeneParteien().length }}</span>
+          }
+        </button>
+      }
+    </div>
+
+    @if (!eventKontext.selectedEventId()) {
+      <p class="leerhinweis">Bitte oben einen Event auswählen.</p>
+    } @else if (ladevorgang()) {
+      <p class="ladehinweis">Wird geladen…</p>
+    } @else if (gefilterteEinladungen().length === 0) {
+      <p class="leerhinweis">Keine Einladungen für diesen Event.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Partei</th>
+            <th>Status</th>
+            <th>Personen</th>
+            <th>Aufstellen</th>
+            <th>Aufräumen</th>
+            <th>Buffet</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (einladung of gefilterteEinladungen(); track einladung.id) {
+            <tr>
+              <td>{{ einladung.partei.bezeichnung }}</td>
+              <td><span [class]="statusBadgeKlasse(einladung.status)">{{ statusLabel(einladung.status) }}</span></td>
+              <td>{{ einladung.anzahlPersonen ?? '–' }}</td>
+              <td>{{ einladung.hilftAufstellen === true ? 'Ja' : einladung.hilftAufstellen === false ? 'Nein' : '–' }}</td>
+              <td>{{ einladung.hilftAufraumen === true ? 'Ja' : einladung.hilftAufraumen === false ? 'Nein' : '–' }}</td>
+              <td>{{ buffetLabel(einladung.buffetBeitrag) }}</td>
+              <td class="aktionen">
+                <button class="btn btn--secondary" (click)="bearbeiten(einladung)">Bearbeiten</button>
+                <button class="btn btn--danger" (click)="loeschen(einladung)">Löschen</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!-- Formular -->
+  <section class="form-section">
+    @if (bearbeitungEinladung()) {
+      <h2>Rückmeldung erfassen</h2>
+      <p class="partei-info">
+        Partei: <strong>{{ bearbeitungEinladung()!.partei.bezeichnung }}</strong>
+      </p>
+    } @else {
+      <h2>Einzelne Einladung hinzufügen</h2>
+    }
+
+    @if (formFehler()) {
+      <div class="alert alert--error">{{ formFehler() }}</div>
+    }
+
+    <form [formGroup]="erfassenForm" (ngSubmit)="speichern()">
+      @if (!bearbeitungEinladung()) {
+        <div class="form-row">
+          <div class="form-field form-field--wide">
+            <label for="parteiId">Partei *</label>
+            @if (!eventKontext.selectedEventId()) {
+              <p class="hinweis">Bitte oben einen Event auswählen.</p>
+            } @else if (nichtEingeladeneParteien().length === 0) {
+              <p class="hinweis">Alle Parteien haben bereits eine Einladung für diesen Event.</p>
+            } @else {
+              <select id="parteiId" formControlName="parteiId">
+                <option value="">– Partei auswählen –</option>
+                @for (partei of nichtEingeladeneParteien(); track partei.id) {
+                  <option [value]="partei.id">{{ partei.bezeichnung }}</option>
+                }
+              </select>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="form-row">
+          <div class="form-field">
+            <label for="status">Status *</label>
+            <select id="status" formControlName="status">
+              <option value="OFFEN">Offen</option>
+              <option value="ANGEMELDET">Angemeldet</option>
+              <option value="ABGEMELDET">Abgemeldet</option>
+            </select>
+            @if (feldUngueltig('status')) {
+              <span class="feldFehler">Status ist erforderlich.</span>
+            }
+          </div>
+        </div>
+
+        @if (isAngemeldet()) {
+          <div class="form-row">
+            <div class="form-field">
+              <label for="anzahlPersonen">Anzahl Personen</label>
+              <input id="anzahlPersonen" type="number" min="1" formControlName="anzahlPersonen" />
+            </div>
+            <div class="form-field form-field--checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="hilftAufstellen" />
+                Hilft beim Aufstellen
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="hilftAufraumen" />
+                Hilft beim Aufräumen
+              </label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="buffetBeitrag">Buffet-Beitrag</label>
+              <select id="buffetBeitrag" formControlName="buffetBeitrag">
+                <option value="KEINER">Keiner</option>
+                <option value="SALAT">Salat</option>
+                <option value="BROT_ZOPF">Brot/Zopf</option>
+                <option value="DESSERT">Dessert</option>
+                <option value="WEITERE">Weitere</option>
+              </select>
+            </div>
+            @if (isWeitere()) {
+              <div class="form-field form-field--wide">
+                <label for="buffetBeitragBeschreibung">Beschreibung</label>
+                <input id="buffetBeitragBeschreibung" type="text" formControlName="buffetBeitragBeschreibung" />
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <div class="form-actions">
+        @if (bearbeitungEinladung()) {
+          <button type="button" class="btn btn--secondary" (click)="abbrechen()">Abbrechen</button>
+          <button type="submit" class="btn btn--primary">Rückmeldung speichern</button>
+        } @else {
+          <button
+            type="submit"
+            class="btn btn--primary"
+            [disabled]="!eventKontext.selectedEventId() || nichtEingeladeneParteien().length === 0"
+          >
+            Hinzufügen
+          </button>
+        }
+      </div>
+    </form>
+  </section>
+</div>

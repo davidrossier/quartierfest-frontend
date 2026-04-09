@@ -1,0 +1,149 @@
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+}
+
+h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+/* ── Listenbereich ─────────────────────────────────────── */
+
+.liste-wrapper {
+  padding: var(--space-4);
+}
+
+.liste-hinweis {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-4);
+}
+
+/* ── Druckbereich ──────────────────────────────────────── */
+
+.druckbereich {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  overflow-x: auto;
+}
+
+.druck-titel {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.druck-titel__name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.druck-titel__event {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+/* ── Tabelle ───────────────────────────────────────────── */
+
+.konsumations-tabelle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  table-layout: fixed;
+}
+
+.konsumations-tabelle thead th {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--space-2) var(--space-3);
+  text-align: center;
+  font-weight: var(--font-weight-medium);
+}
+
+.konsumations-tabelle tbody td {
+  border: 1px solid var(--color-border);
+  padding: var(--space-2) var(--space-3);
+  height: 36px;
+}
+
+.col-partei {
+  text-align: left !important;
+  width: 180px;
+  min-width: 140px;
+}
+
+.col-angebot {
+  width: 100px;
+  min-width: 80px;
+}
+
+.col-personen {
+  width: 64px;
+  min-width: 56px;
+  font-weight: var(--font-weight-medium);
+}
+
+.angebot-bezeichnung {
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.angebot-preis {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.schreib-zelle {
+  background: #fafafa;
+}
+
+/* ── Drucken ───────────────────────────────────────────── */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .liste-wrapper {
+    padding: 0;
+  }
+
+  .druckbereich {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .konsumations-tabelle {
+    font-size: 11px;
+  }
+
+  .konsumations-tabelle thead th,
+  .konsumations-tabelle tbody td {
+    border: 1px solid #000;
+  }
+
+  .schreib-zelle {
+    background: #fff;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 15mm;
+  }
+}

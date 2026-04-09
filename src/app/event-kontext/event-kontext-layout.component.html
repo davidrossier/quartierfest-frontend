@@ -1,0 +1,40 @@
+<div class="event-kontext-bar">
+  <div class="event-kontext-bar__inner">
+    <span class="event-kontext-bar__label">Event</span>
+    <select class="event-kontext-bar__select" (change)="eventWechseln($event)">
+      <option value="">– auswählen –</option>
+      @for (event of eventKontextService.events(); track event.id) {
+        <option [value]="event.id" [selected]="eventKontextService.selectedEventId() === event.id">
+          {{ event.standort }}, {{ datumAnzeige(event.datum) }}
+        </option>
+      }
+    </select>
+    @if (!eventKontextService.selectedEventId()) {
+      <span class="event-kontext-bar__hinweis">
+        Bitte einen Event auswählen, um Einladungen, Teilnahmen und weitere event-abhängige Seiten zu nutzen.
+      </span>
+    }
+  </div>
+</div>
+
+<div class="event-subnav">
+  <div class="event-subnav__inner">
+    @if (gruppe() === 'planung') {
+      <a class="event-subnav__link" routerLink="einladungen" routerLinkActive="event-subnav__link--active">Einladungen</a>
+      <a class="event-subnav__link" routerLink="teilnahmen" routerLinkActive="event-subnav__link--active">Teilnahmen</a>
+      <a class="event-subnav__link" routerLink="bestaetigung" routerLinkActive="event-subnav__link--active">Bestätigung</a>
+      <a class="event-subnav__link" routerLink="konsumationsangebote" routerLinkActive="event-subnav__link--active">Konsumationsangebote</a>
+      <a class="event-subnav__link" routerLink="allgemeinausgaben" routerLinkActive="event-subnav__link--active">Allgemeinausgaben</a>
+    }
+    @if (gruppe() === 'durchfuehrung') {
+      <a class="event-subnav__link" routerLink="konsumationsliste" routerLinkActive="event-subnav__link--active">Konsumationsliste</a>
+      <a class="event-subnav__link" routerLink="konsumationen" routerLinkActive="event-subnav__link--active">Konsumationen</a>
+    }
+    @if (gruppe() === 'nachbearbeitung') {
+      <a class="event-subnav__link" routerLink="abrechnungen" routerLinkActive="event-subnav__link--active">Abrechnungen</a>
+      <a class="event-subnav__link" routerLink="inkasso" routerLinkActive="event-subnav__link--active">Inkasso</a>
+    }
+  </div>
+</div>
+
+<router-outlet />

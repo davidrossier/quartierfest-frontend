@@ -1,0 +1,81 @@
+<div class="container">
+  <h1>Konsumationsangebote</h1>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  <!-- Tabelle -->
+  <section class="tabelle-section">
+    <h2>Angebote</h2>
+    @if (!eventKontext.selectedEventId()) {
+      <p class="leerhinweis">Bitte oben einen Event auswählen.</p>
+    } @else if (ladevorgang()) {
+      <p class="ladehinweis">Wird geladen…</p>
+    } @else if (gefilterteAngebote().length === 0) {
+      <p class="leerhinweis">Noch keine Angebote für diesen Event.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Bezeichnung</th>
+            <th>Preis</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (angebot of gefilterteAngebote(); track angebot.id) {
+            <tr>
+              <td>{{ angebot.bezeichnung }}</td>
+              <td class="preis-zelle">{{ preisAnzeige(angebot.preis) }}</td>
+              <td class="aktionen">
+                <button class="btn btn--secondary" (click)="bearbeiten(angebot)">Bearbeiten</button>
+                <button class="btn btn--danger" (click)="loeschen(angebot)">Löschen</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!-- Formular -->
+  <section class="form-section" [class.disabled]="!eventKontext.selectedEventId()">
+    <h2>{{ bearbeitungAngebot() ? 'Angebot bearbeiten' : 'Neues Angebot erfassen' }}</h2>
+
+    @if (!eventKontext.selectedEventId()) {
+      <p class="hinweis">Bitte oben einen Event auswählen.</p>
+    } @else {
+      @if (formFehler()) {
+        <div class="alert alert--error">{{ formFehler() }}</div>
+      }
+      <form [formGroup]="erfassenForm" (ngSubmit)="speichern()">
+        <div class="form-row">
+          <div class="form-field form-field--wide">
+            <label for="bezeichnung">Bezeichnung *</label>
+            <input id="bezeichnung" type="text" formControlName="bezeichnung" />
+            @if (feldUngueltig('bezeichnung')) {
+              <span class="feldFehler">Bezeichnung ist erforderlich.</span>
+            }
+          </div>
+          <div class="form-field preis-field">
+            <label for="preis">Preis (CHF) *</label>
+            <input id="preis" type="number" min="0" step="0.05" formControlName="preis" />
+            @if (feldUngueltig('preis')) {
+              <span class="feldFehler">Preis ist erforderlich und muss ≥ 0 sein.</span>
+            }
+          </div>
+        </div>
+        <div class="form-actions">
+          @if (bearbeitungAngebot()) {
+            <button type="button" class="btn btn--secondary" (click)="abbrechen()">Abbrechen</button>
+          }
+          <button type="submit" class="btn btn--primary">Speichern</button>
+        </div>
+      </form>
+    }
+  </section>
+</div>

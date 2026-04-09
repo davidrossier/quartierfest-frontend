@@ -1,0 +1,68 @@
+<div class="container">
+  <div class="page-header">
+    <h1>Konsumationen erfassen</h1>
+    @if (eventKontext.selectedEventId() && !keinAngebot() && !keineTeilnahmen()) {
+      <button class="btn btn--primary" type="button" (click)="speichern()">Speichern</button>
+    }
+  </div>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  @if (!eventKontext.selectedEventId()) {
+    <p class="leerhinweis">Bitte oben einen Event auswählen.</p>
+  } @else if (ladevorgang()) {
+    <p class="ladehinweis">Wird geladen…</p>
+  } @else if (keinAngebot()) {
+    <div class="alert alert--warning">
+      Kein Konsumationsangebot für diesen Event erfasst. Bitte zuerst das Angebot pflegen.
+    </div>
+  } @else if (keineTeilnahmen()) {
+    <div class="alert alert--warning">
+      Keine Teilnahmen für diesen Event vorhanden. Bitte zuerst Teilnahmen erfassen.
+    </div>
+  } @else {
+    <div class="tabelle-wrapper">
+      <table class="konsumations-tabelle">
+        <thead>
+          <tr>
+            <th class="col-partei">Partei</th>
+            @for (angebot of angeboteFuerEvent(); track angebot.id) {
+              <th class="col-angebot">
+                <div class="angebot-bezeichnung">{{ angebot.bezeichnung }}</div>
+                <div class="angebot-preis">{{ preisAnzeige(angebot.preis) }}</div>
+              </th>
+            }
+            <th class="col-total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (teilnahme of teilnahmenFuerEvent(); track teilnahme.id) {
+            <tr>
+              <td class="col-partei">{{ teilnahme.einladung.partei.bezeichnung }}</td>
+              @for (angebot of angeboteFuerEvent(); track angebot.id) {
+                <td class="col-angebot">
+                  <input
+                    class="anzahl-input"
+                    [class.anzahl-input--fehler]="getWert(teilnahme.id, angebot.id) < 0"
+                    type="number"
+                    min="0"
+                    [value]="getWert(teilnahme.id, angebot.id) || ''"
+                    placeholder="0"
+                    (input)="setWert(teilnahme.id, angebot.id, $any($event.target).value)"
+                  />
+                </td>
+              }
+              <td class="col-total total-zelle">{{ preisAnzeige(totalFuerTeilnahme(teilnahme)) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="speichern-hinweis">Änderungen werden erst nach Klick auf «Speichern» übernommen.</p>
+  }
+</div>

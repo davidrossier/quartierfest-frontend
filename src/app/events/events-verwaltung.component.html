@@ -1,0 +1,104 @@
+<div class="container">
+  <h1>Eventverwaltung</h1>
+
+  @if (erfolg()) {
+    <div class="alert alert--success">{{ erfolg() }}</div>
+  }
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  <!-- Tabelle -->
+  <section class="tabelle-section">
+    <h2>Events</h2>
+    @if (ladevorgang()) {
+      <p class="ladehinweis">Wird geladen…</p>
+    } @else if (events().length === 0) {
+      <p class="leerhinweis">Keine Events vorhanden.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Startzeit</th>
+            <th>Standort</th>
+            <th>Alternativer Standort</th>
+            <th>Aufstellzeit</th>
+            <th>Aufräumzeit</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (event of events(); track event.id) {
+            <tr>
+              <td>{{ datumAnzeige(event.datum) }}</td>
+              <td>{{ zeitAnzeige(event.startzeit) }}</td>
+              <td>{{ event.standort }}</td>
+              <td>{{ event.alternativerStandort ?? '–' }}</td>
+              <td>{{ zeitAnzeige(event.zeitAufstellen) }}</td>
+              <td>{{ zeitAnzeige(event.zeitAufraumen) }}</td>
+              <td class="aktionen">
+                <button class="btn btn--secondary" (click)="bearbeiten(event)">Bearbeiten</button>
+                <button class="btn btn--danger" (click)="loeschen(event)">Löschen</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!-- Erfassungsformular / Bearbeitungsformular -->
+  <section class="form-section">
+    <h2>{{ bearbeitungEvent() ? 'Event bearbeiten' : 'Event erfassen' }}</h2>
+    @if (formFehler()) {
+      <div class="alert alert--error">{{ formFehler() }}</div>
+    }
+    <form [formGroup]="erfassenForm" (ngSubmit)="speichern()">
+      <div class="form-row">
+        <div class="form-field">
+          <label for="datum">Datum *</label>
+          <input id="datum" type="date" formControlName="datum" />
+          @if (feldUngueltig('datum')) {
+            <span class="feldFehler">Datum ist erforderlich.</span>
+          }
+        </div>
+        <div class="form-field">
+          <label for="startzeit">Startzeit *</label>
+          <input id="startzeit" type="time" formControlName="startzeit" />
+          @if (feldUngueltig('startzeit')) {
+            <span class="feldFehler">Startzeit ist erforderlich.</span>
+          }
+        </div>
+        <div class="form-field form-field--wide">
+          <label for="standort">Standort *</label>
+          <input id="standort" type="text" formControlName="standort" />
+          @if (feldUngueltig('standort')) {
+            <span class="feldFehler">Standort ist erforderlich.</span>
+          }
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field form-field--wide">
+          <label for="alternativerStandort">Alternativer Standort</label>
+          <input id="alternativerStandort" type="text" formControlName="alternativerStandort" />
+        </div>
+        <div class="form-field">
+          <label for="zeitAufstellen">Aufstellzeit</label>
+          <input id="zeitAufstellen" type="time" formControlName="zeitAufstellen" />
+        </div>
+        <div class="form-field">
+          <label for="zeitAufraumen">Aufräumzeit</label>
+          <input id="zeitAufraumen" type="time" formControlName="zeitAufraumen" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        @if (bearbeitungEvent()) {
+          <button type="button" class="btn btn--secondary" (click)="abbrechen()">Abbrechen</button>
+        }
+        <button type="submit" class="btn btn--primary">Speichern</button>
+      </div>
+    </form>
+  </section>
+</div>

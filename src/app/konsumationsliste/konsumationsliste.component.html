@@ -1,0 +1,69 @@
+<div class="container no-print">
+  <div class="page-header">
+    <h1>Konsumationsliste</h1>
+    @if (eventKontext.selectedEventId() && !keinAngebot() && !keineTeilnahmen()) {
+      <button class="btn btn--primary" type="button" (click)="drucken()">Drucken</button>
+    }
+  </div>
+
+  @if (fehler()) {
+    <div class="alert alert--error">{{ fehler() }}</div>
+  }
+
+  @if (!eventKontext.selectedEventId()) {
+    <p class="leerhinweis">Bitte oben einen Event auswählen.</p>
+  } @else if (ladevorgang()) {
+    <p class="ladehinweis">Wird geladen…</p>
+  } @else if (keinAngebot()) {
+    <div class="alert alert--warning">
+      Kein Konsumationsangebot für diesen Event erfasst. Bitte zuerst das Angebot pflegen.
+    </div>
+  } @else if (keineTeilnahmen()) {
+    <div class="alert alert--warning">
+      Keine Teilnahmen für diesen Event vorhanden. Bitte zuerst Teilnahmen erfassen.
+    </div>
+  }
+</div>
+
+@if (eventKontext.selectedEventId() && !ladevorgang() && !keinAngebot() && !keineTeilnahmen()) {
+  <div class="liste-wrapper">
+    <div class="liste-header no-print">
+      <p class="liste-hinweis">Ansicht entspricht dem Druckbild (A4 Querformat empfohlen).</p>
+    </div>
+
+    <div class="druckbereich">
+      @if (eventKontext.selectedEvent(); as event) {
+        <div class="druck-titel">
+          <span class="druck-titel__name">Konsumationsliste</span>
+          <span class="druck-titel__event">{{ event.standort }}, {{ datumAnzeige(event.datum) }}</span>
+        </div>
+      }
+
+      <table class="konsumations-tabelle">
+        <thead>
+          <tr>
+            <th class="col-partei">Partei</th>
+            @for (angebot of angeboteFuerEvent(); track angebot.id) {
+              <th class="col-angebot">
+                <div class="angebot-bezeichnung">{{ angebot.bezeichnung }}</div>
+                <div class="angebot-preis">{{ preisAnzeige(angebot.preis) }}</div>
+              </th>
+            }
+            <th class="col-personen">Pers.</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (teilnahme of teilnahmenFuerEvent(); track teilnahme.id) {
+            <tr>
+              <td class="col-partei">{{ teilnahme.einladung.partei.bezeichnung }}</td>
+              @for (angebot of angeboteFuerEvent(); track angebot.id) {
+                <td class="col-angebot schreib-zelle"></td>
+              }
+              <td class="col-personen schreib-zelle"></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

@@ -1,0 +1,157 @@
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+}
+
+h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--space-8);
+}
+
+/* ── Haupttabelle ──────────────────────────────────────── */
+
+.inkasso-tabelle {
+  width: 100%;
+}
+
+.haupt-zeile {
+  cursor: default;
+}
+
+.haupt-zeile.expandiert {
+  background: var(--color-surface);
+}
+
+.betrag-zelle {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.offen-positiv {
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+}
+
+.offen-null {
+  color: var(--color-success);
+}
+
+.mahnung-badge {
+  margin-left: var(--space-2);
+}
+
+/* ── Detail-Panel ──────────────────────────────────────── */
+
+.detail-zeile td {
+  padding: 0 !important;
+  border-bottom: 2px solid var(--color-primary) !important;
+}
+
+.detail-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background: var(--color-surface);
+}
+
+@media (max-width: 768px) {
+  .detail-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detail-section {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.detail-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.detail-section h3 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+/* ── Sub-Tabelle ───────────────────────────────────────── */
+
+.sub-tabelle {
+  width: 100%;
+  margin-bottom: var(--space-4);
+}
+
+.sub-tabelle thead th {
+  font-size: var(--font-size-xs);
+  padding: var(--space-2) var(--space-3);
+}
+
+.sub-tabelle tbody td {
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+.leerhinweis-klein {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-4);
+}
+
+/* ── Inline-Formular ───────────────────────────────────── */
+
+.inline-form {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.btn--sm {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-xs);
+}
+
+select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  width: 100%;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
+}
+
+input[type='date'],
+input[type='number'],
+input[type='text'] {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  width: 100%;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
+}
