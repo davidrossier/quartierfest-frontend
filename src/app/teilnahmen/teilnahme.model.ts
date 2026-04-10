@@ -1,5 +1,10 @@
 import { BuffetBeitrag } from '../einladungen/einladung.model';
 
+export interface BuffetBeitragEintrag {
+  art: BuffetBeitrag;
+  beschreibung?: string;
+}
+
 export interface Teilnahme {
   id: number;
   einladung: {
@@ -16,8 +21,7 @@ export interface Teilnahme {
   anzahlPersonenEffektiv?: number;
   hilftAufstellen?: boolean;
   hilftAufraumen?: boolean;
-  buffetBeitrag?: BuffetBeitrag;
-  buffetBeitragBeschreibung?: string;
+  buffetBeitraege: BuffetBeitragEintrag[];
 }
 
 export interface TeilnahmePayload {
@@ -26,6 +30,5 @@ export interface TeilnahmePayload {
   anzahlPersonenEffektiv?: number;
   hilftAufstellen?: boolean;
   hilftAufraumen?: boolean;
-  buffetBeitrag?: BuffetBeitrag;
-  buffetBeitragBeschreibung?: string;
+  buffetBeitraege: BuffetBeitragEintrag[];
 }

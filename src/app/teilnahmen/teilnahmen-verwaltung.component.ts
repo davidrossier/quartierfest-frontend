@@ -1,12 +1,12 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormArray, FormGroup } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { TeilnahmeService } from './teilnahme.service';
 import { EinladungService } from '../einladungen/einladung.service';
 import { EventKontextService } from '../event-kontext/event-kontext.service';
-import { Teilnahme } from './teilnahme.model';
+import { Teilnahme, BuffetBeitragEintrag } from './teilnahme.model';
 import { Einladung, BuffetBeitrag } from '../einladungen/einladung.model';
 
 @Component({
@@ -55,15 +55,16 @@ export class TeilnahmenVerwaltungComponent implements OnInit {
     );
   });
 
-  isWeitere = computed(() => this.erfassenForm.get('buffetBeitrag')?.value === 'WEITERE');
-
   erfassenForm = this.fb.group({
     anzahlPersonenEffektiv: [null as number | null],
     hilftAufstellen: [false],
     hilftAufraumen: [false],
-    buffetBeitrag: ['KEINER' as string],
-    buffetBeitragBeschreibung: [''],
+    buffetBeitraege: this.fb.array([]),
   });
+
+  get buffetBeitraegeArray(): FormArray {
+    return this.erfassenForm.get('buffetBeitraege') as FormArray;
+  }
 
   ngOnInit(): void {
     this.laden();
@@ -97,16 +98,19 @@ export class TeilnahmenVerwaltungComponent implements OnInit {
     }
 
     forkJoin(
-      fehlende.map(e =>
-        this.teilnahmeService.save({
+      fehlende.map(e => {
+        const buffetBeitraege: BuffetBeitragEintrag[] = [];
+        if (e.buffetBeitrag && e.buffetBeitrag !== 'KEINER') {
+          buffetBeitraege.push({ art: e.buffetBeitrag, beschreibung: e.buffetBeitragBeschreibung ?? undefined });
+        }
+        return this.teilnahmeService.save({
           einladung: { id: e.id },
           anzahlPersonenEffektiv: e.anzahlPersonen,
           hilftAufstellen: e.hilftAufstellen,
           hilftAufraumen: e.hilftAufraumen,
-          buffetBeitrag: e.buffetBeitrag,
-          buffetBeitragBeschreibung: e.buffetBeitragBeschreibung,
-        }),
-      ),
+          buffetBeitraege,
+        });
+      }),
     ).subscribe({
       next: () => {
         this.erfolg.set(`${fehlende.length} Teilnahme(n) erstellt.`);
@@ -126,8 +130,12 @@ export class TeilnahmenVerwaltungComponent implements OnInit {
       anzahlPersonenEffektiv: teilnahme.anzahlPersonenEffektiv ?? null,
       hilftAufstellen: teilnahme.hilftAufstellen ?? false,
       hilftAufraumen: teilnahme.hilftAufraumen ?? false,
-      buffetBeitrag: teilnahme.buffetBeitrag ?? 'KEINER',
-      buffetBeitragBeschreibung: teilnahme.buffetBeitragBeschreibung ?? '',
+    });
+    while (this.buffetBeitraegeArray.length > 0) {
+      this.buffetBeitraegeArray.removeAt(0);
+    }
+    (teilnahme.buffetBeitraege ?? []).forEach(b => {
+      this.buffetBeitraegeArray.push(this.fb.group({ art: [b.art], beschreibung: [b.beschreibung ?? ''] }));
     });
     this.formFehler.set(null);
   }
@@ -137,12 +145,22 @@ export class TeilnahmenVerwaltungComponent implements OnInit {
     this.formZuruecksetzen();
   }
 
+  beitragHinzufuegen(): void {
+    this.buffetBeitraegeArray.push(this.fb.group({ art: ['SALAT'], beschreibung: [''] }));
+  }
+
+  beitragEntfernen(index: number): void {
+    this.buffetBeitraegeArray.removeAt(index);
+  }
+
   speichern(): void {
     const editTeilnahme = this.bearbeitungTeilnahme();
     if (!editTeilnahme) return;
 
-    const { anzahlPersonenEffektiv, hilftAufstellen, hilftAufraumen, buffetBeitrag, buffetBeitragBeschreibung } =
-      this.erfassenForm.value;
+    const { anzahlPersonenEffektiv, hilftAufstellen, hilftAufraumen } = this.erfassenForm.value;
+    const buffetBeitraege: BuffetBeitragEintrag[] = (this.buffetBeitraegeArray.value as Array<{ art: string; beschreibung: string }>)
+      .filter(b => b.art)
+      .map(b => ({ art: b.art as BuffetBeitrag, beschreibung: b.beschreibung || undefined }));
 
     this.teilnahmeService
       .save({
@@ -151,9 +169,7 @@ export class TeilnahmenVerwaltungComponent implements OnInit {
         anzahlPersonenEffektiv: anzahlPersonenEffektiv != null ? Number(anzahlPersonenEffektiv) : undefined,
         hilftAufstellen: hilftAufstellen ?? false,
         hilftAufraumen: hilftAufraumen ?? false,
-        buffetBeitrag: buffetBeitrag ? (buffetBeitrag as BuffetBeitrag) : undefined,
-        buffetBeitragBeschreibung:
-          buffetBeitrag === 'WEITERE' ? (buffetBeitragBeschreibung ?? '') : undefined,
+        buffetBeitraege,
       })
       .subscribe({
         next: () => {
@@ -183,22 +199,21 @@ export class TeilnahmenVerwaltungComponent implements OnInit {
     });
   }
 
-  buffetLabel(beitrag?: BuffetBeitrag | null): string {
-    switch (beitrag) {
+  buffetArtLabel(art: BuffetBeitrag): string {
+    switch (art) {
       case 'SALAT': return 'Salat';
       case 'BROT_ZOPF': return 'Brot/Zopf';
       case 'DESSERT': return 'Dessert';
       case 'WEITERE': return 'Weitere';
-      default: return '–';
+      default: return art;
     }
   }
 
   private formZuruecksetzen(): void {
-    this.erfassenForm.reset({
-      buffetBeitrag: 'KEINER',
-      hilftAufstellen: false,
-      hilftAufraumen: false,
-    });
+    this.erfassenForm.reset({ hilftAufstellen: false, hilftAufraumen: false });
+    while (this.buffetBeitraegeArray.length > 0) {
+      this.buffetBeitraegeArray.removeAt(0);
+    }
     this.formFehler.set(null);
   }
 }

@@ -101,3 +101,37 @@ input[type='number']:focus {
   box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
 }
 
+.form-field--full {
+  flex: 1 1 100%;
+}
+
+.form-field--narrow {
+  flex: 0 0 160px;
+}
+
+.buffet-beitraege-liste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.buffet-beitrag-zeile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.buffet-beitrag-zeile .form-field {
+  margin: 0;
+}
+
+.buffet-liste {
+  margin: 0;
+  padding-left: var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+.buffet-liste li {
+  padding: var(--space-1) 0;
+}
+

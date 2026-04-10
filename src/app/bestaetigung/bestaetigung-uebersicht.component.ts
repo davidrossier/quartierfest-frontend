@@ -3,9 +3,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { EinladungService } from '../einladungen/einladung.service';
 import { KonsumationsangebotService } from '../konsumationsangebote/konsumationsangebot.service';
+import { TeilnahmeService } from '../teilnahmen/teilnahme.service';
 import { EventKontextService } from '../event-kontext/event-kontext.service';
 import { Einladung, BuffetBeitrag } from '../einladungen/einladung.model';
 import { Konsumationsangebot } from '../konsumationsangebote/konsumationsangebot.model';
+import { Teilnahme } from '../teilnahmen/teilnahme.model';
 
 @Component({
   selector: 'app-bestaetigung-uebersicht',
@@ -16,10 +18,12 @@ import { Konsumationsangebot } from '../konsumationsangebote/konsumationsangebot
 export class BestaetigungUebersichtComponent implements OnInit {
   private readonly einladungService = inject(EinladungService);
   private readonly angebotService = inject(KonsumationsangebotService);
+  private readonly teilnahmeService = inject(TeilnahmeService);
   readonly eventKontext = inject(EventKontextService);
 
   alleEinladungen = signal<Einladung[]>([]);
   alleAngebote = signal<Konsumationsangebot[]>([]);
+  alleTeilnahmen = signal<Teilnahme[]>([]);
   ladevorgang = signal(false);
   fehler = signal<string | null>(null);
   erfolg = signal<string | null>(null);
@@ -38,16 +42,22 @@ export class BestaetigungUebersichtComponent implements OnInit {
 
   keinAngebot = computed(() => this.eventKontext.selectedEventId() != null && this.angeboteFuerEvent().length === 0);
 
+  teilnahmenFuerEvent = computed(() => {
+    const eventId = this.eventKontext.selectedEventId();
+    if (!eventId) return [];
+    return this.alleTeilnahmen().filter(t => t.einladung.event.id === eventId);
+  });
+
   buffetZusammenstellung = computed(() => {
     const gruppen = new Map<BuffetBeitrag, string[]>();
-    for (const e of this.angemeldeteEinladungen()) {
-      if (!e.buffetBeitrag || e.buffetBeitrag === 'KEINER') continue;
-      if (!gruppen.has(e.buffetBeitrag)) gruppen.set(e.buffetBeitrag, []);
-      const beschreibung =
-        e.buffetBeitrag === 'WEITERE' && e.buffetBeitragBeschreibung
-          ? `${e.partei.bezeichnung} (${e.buffetBeitragBeschreibung})`
-          : e.partei.bezeichnung;
-      gruppen.get(e.buffetBeitrag)!.push(beschreibung);
+    for (const t of this.teilnahmenFuerEvent()) {
+      for (const b of t.buffetBeitraege ?? []) {
+        if (!gruppen.has(b.art)) gruppen.set(b.art, []);
+        const eintrag = b.beschreibung
+          ? `${t.einladung.partei.bezeichnung} (${b.beschreibung})`
+          : t.einladung.partei.bezeichnung;
+        gruppen.get(b.art)!.push(eintrag);
+      }
     }
     return Array.from(gruppen.entries()).map(([beitrag, parteien]) => ({ beitrag, parteien }));
   });
@@ -61,6 +71,10 @@ export class BestaetigungUebersichtComponent implements OnInit {
     this.angebotService.getAll().subscribe({
       next: angebote => this.alleAngebote.set(angebote),
       error: () => this.fehler.set('Konsumationsangebote konnten nicht geladen werden.'),
+    });
+    this.teilnahmeService.getAll().subscribe({
+      next: teilnahmen => this.alleTeilnahmen.set(teilnahmen),
+      error: () => this.fehler.set('Teilnahmen konnten nicht geladen werden.'),
     });
   }
 

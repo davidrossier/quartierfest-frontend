@@ -42,7 +42,7 @@
             <th class="sortierbar" (click)="sort.toggle('anzahlPersonenEffektiv')">Pers. (Effektiv){{ sort.indikator('anzahlPersonenEffektiv') }}</th>
             <th>Aufstellen</th>
             <th>Aufräumen</th>
-            <th>Buffet</th>
+            <th>Buffet-Beiträge</th>
             <th></th>
           </tr>
         </thead>
@@ -60,7 +60,17 @@
               </td>
               <td>{{ teilnahme.hilftAufstellen === true ? 'Ja' : teilnahme.hilftAufstellen === false ? 'Nein' : '–' }}</td>
               <td>{{ teilnahme.hilftAufraumen === true ? 'Ja' : teilnahme.hilftAufraumen === false ? 'Nein' : '–' }}</td>
-              <td>{{ buffetLabel(teilnahme.buffetBeitrag) }}</td>
+              <td>
+                @if (teilnahme.buffetBeitraege?.length) {
+                  <ul class="buffet-liste">
+                    @for (b of teilnahme.buffetBeitraege; track $index) {
+                      <li>{{ buffetArtLabel(b.art) }}{{ b.beschreibung ? ': ' + b.beschreibung : '' }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <span class="text-muted">–</span>
+                }
+              </td>
               <td class="aktionen">
                 <button class="btn btn--secondary" (click)="bearbeiten(teilnahme)">Bearbeiten</button>
                 <button class="btn btn--danger" (click)="loeschen(teilnahme)">Löschen</button>
@@ -101,24 +111,34 @@
             </label>
           </div>
         </div>
+
         <div class="form-row">
-          <div class="form-field">
-            <label for="buffetBeitrag">Buffet-Beitrag</label>
-            <select id="buffetBeitrag" formControlName="buffetBeitrag">
-              <option value="KEINER">Keiner</option>
-              <option value="SALAT">Salat</option>
-              <option value="BROT_ZOPF">Brot/Zopf</option>
-              <option value="DESSERT">Dessert</option>
-              <option value="WEITERE">Weitere</option>
-            </select>
-          </div>
-          @if (isWeitere()) {
-            <div class="form-field form-field--wide">
-              <label for="buffetBeitragBeschreibung">Beschreibung</label>
-              <input id="buffetBeitragBeschreibung" type="text" formControlName="buffetBeitragBeschreibung" />
+          <div class="form-field form-field--full">
+            <label>Buffet-Beiträge</label>
+            <div class="buffet-beitraege-liste" formArrayName="buffetBeitraege">
+              @for (beitrag of buffetBeitraegeArray.controls; track $index; let i = $index) {
+                <div class="buffet-beitrag-zeile" [formGroupName]="i">
+                  <div class="form-field form-field--narrow">
+                    <select formControlName="art">
+                      <option value="SALAT">Salat</option>
+                      <option value="BROT_ZOPF">Brot/Zopf</option>
+                      <option value="DESSERT">Dessert</option>
+                      <option value="WEITERE">Weitere</option>
+                    </select>
+                  </div>
+                  <div class="form-field form-field--wide">
+                    <input type="text" formControlName="beschreibung" placeholder="Beschreibung (optional)" />
+                  </div>
+                  <button type="button" class="btn btn--danger" (click)="beitragEntfernen(i)">Entfernen</button>
+                </div>
+              }
+              <button type="button" class="btn btn--secondary btn--sm" (click)="beitragHinzufuegen()">
+                + Beitrag hinzufügen
+              </button>
             </div>
-          }
+          </div>
         </div>
+
         <div class="form-actions">
           <button type="button" class="btn btn--secondary" (click)="abbrechen()">Abbrechen</button>
           <button type="submit" class="btn btn--primary">Speichern</button>
