@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -39,14 +40,14 @@ export class ParteienVerwaltungComponent implements OnInit {
   formFehler = signal<string | null>(null);
   bearbeitungPartei = signal<Partei | null>(null);
 
-  twintAktiv = computed(() => this.erfassenForm.get('twintAktiv')?.value === true);
-
   erfassenForm = this.fb.group({
     bezeichnung: ['', Validators.required],
     adresse: ['', Validators.required],
     twintAktiv: [false],
     twintMobilenummer: [''],
   });
+
+  twintAktiv = toSignal(this.erfassenForm.get('twintAktiv')!.valueChanges, { initialValue: false });
 
   ngOnInit(): void {
     this.laden();

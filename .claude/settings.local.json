@@ -3,7 +3,12 @@
     "allow": [
       "WebFetch(domain:www.galaxus.ch)",
       "WebSearch",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Read(//c/Users/david/Repo//**)",
+      "Read(//c/Users/david/Repo/**)",
+      "Bash(npx playwright *)",
+      "Bash(curl -s -X POST http://localhost:8080/api/persons -H \"Content-Type: application/json\" -d '{\"vorname\":\"FK-Test\",\"name\":\"FK-Test-Delete\"}')",
+      "Bash(curl *)"
     ]
   }
 }

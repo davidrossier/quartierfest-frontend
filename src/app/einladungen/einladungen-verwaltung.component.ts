@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
@@ -57,9 +58,6 @@ export class EinladungenVerwaltungComponent implements OnInit {
     return this.parteien().filter(p => !eingeladeneIds.has(p.id));
   });
 
-  isAngemeldet = computed(() => this.erfassenForm.get('status')?.value === 'ANGEMELDET');
-  isWeitere = computed(() => this.erfassenForm.get('buffetBeitrag')?.value === 'WEITERE');
-
   erfassenForm = this.fb.group({
     parteiId: ['' as string],
     status: ['OFFEN' as EinladungStatus, Validators.required],
@@ -69,6 +67,15 @@ export class EinladungenVerwaltungComponent implements OnInit {
     buffetBeitrag: ['KEINER' as string],
     buffetBeitragBeschreibung: [''],
   });
+
+  private readonly statusValue = toSignal(this.erfassenForm.get('status')!.valueChanges, {
+    initialValue: 'OFFEN' as EinladungStatus,
+  });
+  private readonly buffetBeitragValue = toSignal(this.erfassenForm.get('buffetBeitrag')!.valueChanges, {
+    initialValue: 'KEINER' as string,
+  });
+  isAngemeldet = computed(() => this.statusValue() === 'ANGEMELDET');
+  isWeitere = computed(() => this.buffetBeitragValue() === 'WEITERE');
 
   ngOnInit(): void {
     this.laden();
