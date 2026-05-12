@@ -2,11 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Konsumationsangebot, KonsumationsangebotPayload } from './konsumationsangebot.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class KonsumationsangebotService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/konsumationsangebote';
+  private readonly baseUrl = `${environment.apiUrl}/api/konsumationsangebote`;
 
   getAll(): Observable<Konsumationsangebot[]> {
     return this.http.get<Konsumationsangebot[]>(this.baseUrl);

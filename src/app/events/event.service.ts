@@ -2,11 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Event, EventPayload } from './event.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class EventService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/events';
+  private readonly baseUrl = `${environment.apiUrl}/api/events`;
 
   getAll(): Observable<Event[]> {
     return this.http.get<Event[]>(this.baseUrl);

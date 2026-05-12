@@ -148,9 +148,20 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 - Type: `ZahlungsKanal = 'TWINT' | 'UEBERWEISUNG' | 'BAR'`
 - `zahlung.service.ts` — `GET/POST/DELETE /api/zahlungen`
 
+## Environments
+
+Die Backend-URL wird über Angular-Environments konfiguriert:
+
+| Datei | `apiUrl` | Verwendung |
+|---|---|---|
+| `src/environments/environment.ts` | `http://localhost:8080` | Dev-Server (`npm start`) |
+| `src/environments/environment.prod.ts` | `''` (leer) | Production-Build (`npm run build`) |
+
+Alle Services importieren `environment` aus `../../environments/environment` und bauen die `baseUrl` als `` `${environment.apiUrl}/api/<ressource>` ``. Im Production-Build ersetzt `angular.json` (`fileReplacements`) automatisch `environment.ts` durch `environment.prod.ts`, sodass relative URLs (`/api/...`) entstehen — Nginx routet diese zum Backend.
+
 ## Backend
 
-REST API läuft auf `http://localhost:8080`. Spezifikationen: `../quartierfest-backend/specs/`
+REST API läuft lokal auf `http://localhost:8080`. Spezifikationen: `../quartierfest-backend/specs/`
 
 | Ressource | Endpunkte |
 |---|---|

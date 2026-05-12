@@ -2,11 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Allgemeinausgabe, AllgemeinausgabePayload } from './allgemeinausgabe.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AllgemeinausgabeService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/allgemeinausgaben';
+  private readonly baseUrl = `${environment.apiUrl}/api/allgemeinausgaben`;
 
   getAll(): Observable<Allgemeinausgabe[]> {
     return this.http.get<Allgemeinausgabe[]>(this.baseUrl);

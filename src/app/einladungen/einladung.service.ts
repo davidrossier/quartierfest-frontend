@@ -2,11 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Einladung, EinladungPayload } from './einladung.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class EinladungService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/einladungen';
+  private readonly baseUrl = `${environment.apiUrl}/api/einladungen`;
 
   getAll(): Observable<Einladung[]> {
     return this.http.get<Einladung[]>(this.baseUrl);

@@ -2,11 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Teilnahme, TeilnahmePayload } from './teilnahme.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class TeilnahmeService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/teilnahmen';
+  private readonly baseUrl = `${environment.apiUrl}/api/teilnahmen`;
 
   getAll(): Observable<Teilnahme[]> {
     return this.http.get<Teilnahme[]>(this.baseUrl);

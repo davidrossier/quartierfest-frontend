@@ -2,11 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Partei, ParteiPayload } from './partei.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ParteiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/parteien';
+  private readonly baseUrl = `${environment.apiUrl}/api/parteien`;
 
   getAll(): Observable<Partei[]> {
     return this.http.get<Partei[]>(this.baseUrl);

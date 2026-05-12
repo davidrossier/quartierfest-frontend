@@ -2,11 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Mahnung, MahnungPayload } from './mahnung.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class MahnungService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080/api/mahnungen';
+  private readonly baseUrl = `${environment.apiUrl}/api/mahnungen`;
 
   getAll(): Observable<Mahnung[]> {
     return this.http.get<Mahnung[]>(this.baseUrl);
