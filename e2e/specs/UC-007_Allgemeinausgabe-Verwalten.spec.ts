@@ -11,7 +11,7 @@
  *  - [ERROR]  Ausgabe ohne Betrag speichern schlägt fehl
  *  - [ERROR]  Ausgabe ohne Beschreibung speichern schlägt fehl
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { AllgemeinausgabenPage } from '../pages/planung/allgemeinausgaben.page';
 import {
   createTestEvent,

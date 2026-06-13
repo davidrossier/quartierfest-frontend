@@ -10,7 +10,7 @@
  *  - [HAPPY]  Event löschen
  *  - [ERROR]  Event ohne Pflichtfeld speichern schlägt fehl
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { EventsPage } from '../pages/events.page';
 import { createTestEvent, deleteTestEvent, type TestEvent } from '../helpers/api-helpers';
 

@@ -12,14 +12,34 @@ import { KonsumationslisteComponent } from './konsumationsliste/konsumationslist
 import { KonsumationenVerwaltungComponent } from './konsumationen/konsumationen-verwaltung.component';
 import { AbrechnungenVerwaltungComponent } from './nachbearbeitung/abrechnungen-verwaltung.component';
 import { InkassoVerwaltungComponent } from './nachbearbeitung/inkasso-verwaltung.component';
+import { LoginComponent } from './auth/login.component';
+import { BenutzerVerwaltungComponent } from './benutzer/benutzer-verwaltung.component';
+import { MeineTeilnahmeComponent } from './meine-teilnahme/meine-teilnahme.component';
+import { authGuard, roleGuard } from './auth/auth.guard';
+
+// UC-014: /login ist offen; alle übrigen Routen sind rollenbasiert geschützt
+const nurOrganisator = [authGuard, roleGuard('ORGANISATOR')];
+const nurPartei = [authGuard, roleGuard('PARTEI')];
 
 export const routes: Routes = [
-  { path: 'personen', component: PersonenVerwaltungComponent },
-  { path: 'parteien', component: ParteienVerwaltungComponent },
-  { path: 'events', component: EventsVerwaltungComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'personen', component: PersonenVerwaltungComponent, canActivate: nurOrganisator },
+  { path: 'parteien', component: ParteienVerwaltungComponent, canActivate: nurOrganisator },
+  { path: 'events', component: EventsVerwaltungComponent, canActivate: nurOrganisator },
+  {
+    path: 'admin/benutzer',
+    component: BenutzerVerwaltungComponent,
+    canActivate: nurOrganisator,
+  },
+  {
+    path: 'meine-teilnahme',
+    component: MeineTeilnahmeComponent,
+    canActivate: nurPartei,
+  },
   {
     path: 'planung',
     component: EventKontextLayoutComponent,
+    canActivate: nurOrganisator,
     data: { gruppe: 'planung' },
     children: [
       { path: 'einladungen', component: EinladungenVerwaltungComponent },
@@ -33,6 +53,7 @@ export const routes: Routes = [
   {
     path: 'durchfuehrung',
     component: EventKontextLayoutComponent,
+    canActivate: nurOrganisator,
     data: { gruppe: 'durchfuehrung' },
     children: [
       { path: 'konsumationsliste', component: KonsumationslisteComponent },
@@ -43,6 +64,7 @@ export const routes: Routes = [
   {
     path: 'nachbearbeitung',
     component: EventKontextLayoutComponent,
+    canActivate: nurOrganisator,
     data: { gruppe: 'nachbearbeitung' },
     children: [
       { path: 'abrechnungen', component: AbrechnungenVerwaltungComponent },

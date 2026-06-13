@@ -14,7 +14,7 @@
  * Nicht abgedeckt:
  *  - FK-Constraint beim Löschen mit Konsumationen — erfordert vollständiges Konsumations-Setup
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { KonsumationsangebotePage } from '../pages/planung/konsumationsangebote.page';
 import {
   createTestEvent,

@@ -1,0 +1,38 @@
+<div class="login-container">
+  <section class="login-card">
+    <h1>Anmelden</h1>
+
+    @if (fehler()) {
+      <p class="fehler-meldung" role="alert">{{ fehler() }}</p>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="anmelden()">
+      <div class="form-group">
+        <label for="email">E-Mail-Adresse</label>
+        <input id="email" type="email" formControlName="email" autocomplete="username" />
+        @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+          <p class="feld-fehler">Bitte eine gültige E-Mail-Adresse eingeben.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="passwort">Passwort</label>
+        <input
+          id="passwort"
+          type="password"
+          formControlName="passwort"
+          autocomplete="current-password"
+        />
+        @if (loginForm.controls.passwort.touched && loginForm.controls.passwort.invalid) {
+          <p class="feld-fehler">Bitte das Passwort eingeben.</p>
+        }
+      </div>
+
+      <button type="submit" [disabled]="ladevorgang()">
+        {{ ladevorgang() ? 'Anmelden …' : 'Anmelden' }}
+      </button>
+    </form>
+
+    <p class="hinweis">Passwort vergessen? Bitte wenden Sie sich an den Organisator.</p>
+  </section>
+</div>

@@ -9,7 +9,7 @@
  *  - [HAPPY]  Anteil Allgemeinkosten korrekt berechnen
  *  - [HAPPY]  Zustellungskanal automatisch auf TWINT gesetzt bei twintAktiv=true
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { AbrechnungenPage } from '../pages/nachbearbeitung/abrechnungen.page';
 import {
   createTestEvent,

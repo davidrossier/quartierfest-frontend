@@ -36,9 +36,25 @@ Angular 21 standalone application — no NgModules. Every component uses the sta
 
 **TypeScript:** Strict mode with `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, Angular strict template checking.
 
+## Authentifizierung (UC-014, AUTH-002 — Eigenbau)
+
+Alle Routen ausser `/login` sind durch funktionale Guards geschützt (`authGuard` + `roleGuard('ORGANISATOR'|'PARTEI')` in `src/app/auth/auth.guard.ts`). Rollenbasiertes Routing nach Login: `ORGANISATOR` → `/personen`, `PARTEI` → `/meine-teilnahme`.
+
+- **`AuthService`** (`src/app/auth/auth.service.ts`): `login()` ruft `POST /api/auth/login`, legt das JWT in `sessionStorage` (Key `quartierfest.token`) ab; `rolle()`/`email()` sind Signals aus dem dekodierten JWT-Payload; `logout()` löscht Token und leitet zu `/login`.
+- **`authInterceptor`** (registriert in `app.config.ts` via `withInterceptors`): hängt `Authorization: Bearer` an alle `/api/**`-Requests; bei 401 (ausser vom Login-Endpunkt) wird die Sitzung verworfen → `/login`.
+- **Navigation** (`app.html`): rollenabhängig via `@if (auth.rolle() === ...)`; angemeldete Benutzer sehen E-Mail + Abmelden-Button.
+- **Dev-Login:** Bootstrap-Admin `admin@quartierfest.local` / `quartierfest-admin` (Backend legt ihn beim Start an).
+
 ## Navigation & Routing
 
-Main nav is split into **Stammdaten** (no event context) and three event-scoped sections. The three event sections share an `EventKontextLayoutComponent` that provides an event-selector dropdown and a sub-navigation bar.
+Main nav is split into **Stammdaten** (no event context) and three event-scoped sections. The three event sections share an `EventKontextLayoutComponent` that provides an event-selector dropdown and a sub-navigation bar. Alle Bereiche ausser «Meine Teilnahme» sind nur für `ORGANISATOR` sichtbar.
+
+### Auth & Partei-Sicht
+| Route | Component | Rolle |
+|---|---|---|
+| `/login` | LoginComponent | öffentlich |
+| `/admin/benutzer` | BenutzerVerwaltungComponent | ORGANISATOR |
+| `/meine-teilnahme` | MeineTeilnahmeComponent | PARTEI |
 
 ### Stammdaten (no event context)
 | Route | Component |
@@ -106,8 +122,8 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 - Bulk-Erstellung für alle Parteien, Status- und Büffetbeitrags-Verwaltung
 
 **Teilnahmeverwaltung** (`src/app/teilnahmen/`)
-- `teilnahme.model.ts` — `Teilnahme` (id, einladung, anzahlPersonenEffektiv?, hilftAufstellen?, hilftAufraumen?, buffetBeitraege: BuffetBeitragEintrag[]), `TeilnahmePayload`
-- `teilnahme.service.ts` — `GET/POST/DELETE /api/teilnahmen`
+- `teilnahme.model.ts` — `Teilnahme` (id, einladung, anzahlPersonenEffektiv?, hilftAufstellen?, hilftAufraumen?, buffetBeitraege: BuffetBeitragEintrag[]), `TeilnahmePayload`, `TeilnahmeUpdatePayload` (UC-016-Whitelist ohne einladung)
+- `teilnahme.service.ts` — `GET/POST/DELETE /api/teilnahmen`, `getMeine()` (UC-016), `update(id, dto)` (UC-016)
 - FormArray für mehrere Büffetbeiträge
 
 **Konsumationsangebote** (`src/app/konsumationsangebote/`)
@@ -148,6 +164,22 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 - Type: `ZahlungsKanal = 'TWINT' | 'UEBERWEISUNG' | 'BAR'`
 - `zahlung.service.ts` — `GET/POST/DELETE /api/zahlungen`
 
+### Auth (UC-014/015/016)
+
+**Login** (`src/app/auth/`)
+- `auth.service.ts` — Login/Logout, Token in `sessionStorage`, Signals `istAngemeldet`/`rolle`/`email`
+- `auth.interceptor.ts` — Bearer-Header + 401-Handling (funktionaler Interceptor)
+- `auth.guard.ts` — `authGuard`, `roleGuard(rolle)` (funktionale Guards)
+- `login.component.*` — Login-Formular unter `/login`
+
+**Benutzerverwaltung** (`src/app/benutzer/`)
+- `benutzer.model.ts` — `Benutzer` (id, email, rolle, partei?), `BenutzerPayload` (inkl. passwort, nur im Request)
+- `benutzer.service.ts` — `GET/POST/DELETE /api/benutzer`, `passwortSetzen(id, passwort)` → `PUT /api/benutzer/{id}/passwort`
+- `BenutzerVerwaltungComponent` — Accounts anlegen (E-Mail, Initialpasswort min. 10 Zeichen, Rolle, Partei-Dropdown bei PARTEI), Passwort-Reset (window.prompt), Löschen (window.confirm)
+
+**Meine Teilnahme** (`src/app/meine-teilnahme/`)
+- `MeineTeilnahmeComponent` — Partei-Sicht auf die eigene Teilnahme zum nächsten Event; speichert via `PUT /api/teilnahmen/{id}` (Whitelist-Payload); 404 → Hinweis «noch keine Teilnahme erstellt»
+
 ## Environments
 
 Die Backend-URL wird über Angular-Environments konfiguriert:
@@ -176,3 +208,13 @@ REST API läuft lokal auf `http://localhost:8080`. Spezifikationen: `../quartier
 | Abrechnungen | `GET/POST /api/abrechnungen`, `DELETE /api/abrechnungen/{id}` |
 | Mahnungen | `GET/POST /api/mahnungen`, `DELETE /api/mahnungen/{id}` |
 | Zahlungen | `GET/POST /api/zahlungen`, `DELETE /api/zahlungen/{id}` |
+| Auth | `POST /api/auth/login` → `{token}` (HS256-JWT, 12 h) |
+| Benutzer | `GET/POST /api/benutzer`, `DELETE /api/benutzer/{id}`, `PUT /api/benutzer/{id}/passwort` |
+| Teilnahme (PARTEI) | `GET /api/teilnahmen/meine`, `PUT /api/teilnahmen/{id}` (Whitelist-DTO) |
+
+## E2E-Tests (Playwright)
+
+- `e2e/fixtures.ts`: gemeinsame `test`-Fixture injiziert das Token des Bootstrap-Organisators via `addInitScript` in `sessionStorage` — alle Organisator-Specs importieren `{ test, expect } from '../fixtures'` statt `@playwright/test`.
+- `UC-014_Benutzer-Anmelden.spec.ts` und `UC-016_Teilnahme-Bestaetigen.spec.ts` importieren bewusst `@playwright/test` (UC-014 testet den UI-Login selbst; UC-016 meldet sich als PARTEI-Benutzer an).
+- Auth-Helper in `e2e/helpers/api-helpers.ts`: `login()`, `getOrganisatorToken()`, `createTestBenutzer()`, `deleteTestBenutzerByEmail()`, `inTagen()`.
+- Voraussetzung: Backend (Port 8080, Default-Profil) und `npm start` (Port 4200) laufen; `npx playwright install chromium` einmalig.

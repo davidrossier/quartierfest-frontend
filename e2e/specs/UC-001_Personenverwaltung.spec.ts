@@ -11,7 +11,7 @@
  *  - [ERROR]  Pflichtfeld fehlt — Formular zeigt Validierungsfehler
  *  - [ERROR]  Person löschen die einer Partei zugeordnet ist schlägt fehl
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { PersonenPage } from '../pages/personen.page';
 import {
   createTestPerson,

@@ -1,0 +1,69 @@
+<div class="container">
+  <h1>Meine Teilnahme</h1>
+
+  @if (keineTeilnahme()) {
+    <p class="meldung meldung--hinweis">
+      Für Ihren Haushalt wurde noch keine Teilnahme erstellt. Bitte wenden Sie sich an den
+      Organisator.
+    </p>
+  } @else if (teilnahme(); as t) {
+    <p class="event-info">
+      Event vom <strong>{{ t.einladung.event.datum }}</strong> – {{ t.einladung.event.standort }}
+      ({{ t.einladung.partei.bezeichnung }})
+    </p>
+
+    @if (fehler()) {
+      <p class="meldung meldung--fehler" role="alert">{{ fehler() }}</p>
+    }
+    @if (erfolg()) {
+      <p class="meldung meldung--erfolg">{{ erfolg() }}</p>
+    }
+
+    <form class="form-section" [formGroup]="form" (ngSubmit)="speichern()">
+      <div class="form-group">
+        <label for="anzahl">Anzahl Personen</label>
+        <input id="anzahl" type="number" min="0" formControlName="anzahlPersonenEffektiv" />
+      </div>
+
+      <div class="form-group form-group--checkbox">
+        <label>
+          <input type="checkbox" formControlName="hilftAufstellen" />
+          Wir helfen beim Aufstellen
+        </label>
+      </div>
+
+      <div class="form-group form-group--checkbox">
+        <label>
+          <input type="checkbox" formControlName="hilftAufraumen" />
+          Wir helfen beim Aufräumen
+        </label>
+      </div>
+
+      <fieldset formArrayName="buffetBeitraege">
+        <legend>Buffet-Beiträge</legend>
+        @for (gruppe of buffetBeitraege.controls; track gruppe; let i = $index) {
+          <div class="beitrag-zeile" [formGroupName]="i">
+            <select formControlName="art">
+              @for (art of buffetArten; track art) {
+                <option [value]="art">{{ art }}</option>
+              }
+            </select>
+            <input type="text" formControlName="beschreibung" placeholder="Beschreibung" />
+            <button type="button" class="btn-sekundaer" (click)="beitragEntfernen(i)">
+              Entfernen
+            </button>
+          </div>
+        }
+        <button type="button" class="btn-sekundaer" (click)="beitragHinzufuegen()">
+          Beitrag hinzufügen
+        </button>
+      </fieldset>
+
+      <button type="submit" [disabled]="ladevorgang()">
+        {{ ladevorgang() ? 'Speichern …' : 'Speichern' }}
+      </button>
+    </form>
+  } @else if (fehler()) {
+    <p class="meldung meldung--fehler" role="alert">{{ fehler() }}</p>
+  }
+</div>

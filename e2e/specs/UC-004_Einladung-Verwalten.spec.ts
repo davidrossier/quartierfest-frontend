@@ -10,7 +10,7 @@
  *  - [HAPPY]  Rückmeldung Abmeldung erfassen
  *  - [EDGE]   Einladungen erstellen überspringt bereits vorhandene Einladung
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { EinladungenPage } from '../pages/planung/einladungen.page';
 import {
   createTestEvent,

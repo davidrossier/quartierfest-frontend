@@ -402,9 +402,87 @@ export async function deleteTestMahnung(id: number): Promise<void> {
 }
 
 // ================================================================
+// Auth (UC-014/UC-015, AUTH-002)
+// ================================================================
+
+/** Dev-Bootstrap-Admin (siehe backend application.properties). */
+export const ORGANISATOR_EMAIL = 'admin@quartierfest.local';
+export const ORGANISATOR_PASSWORT = 'quartierfest-admin';
+
+/** sessionStorage-Schlüssel des Frontends (auth.service.ts). */
+export const TOKEN_KEY = 'quartierfest.token';
+
+export interface TestBenutzer {
+  id: number;
+  email: string;
+  rolle: 'ORGANISATOR' | 'PARTEI';
+  partei?: { id: number } | null;
+}
+
+export async function login(email: string, passwort: string): Promise<string> {
+  const response = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, passwort }),
+  });
+  if (!response.ok) throw new Error(`Login fehlgeschlagen: ${response.status}`);
+  const body = await response.json();
+  return body.token;
+}
+
+let organisatorToken: string | null = null;
+
+/** Token des Bootstrap-Organisators (pro Testlauf gecacht; Gültigkeit 12 h). */
+export async function getOrganisatorToken(): Promise<string> {
+  if (!organisatorToken) {
+    organisatorToken = await login(ORGANISATOR_EMAIL, ORGANISATOR_PASSWORT);
+  }
+  return organisatorToken;
+}
+
+export async function createTestBenutzer(daten: {
+  email: string;
+  passwort: string;
+  rolle: 'ORGANISATOR' | 'PARTEI';
+  parteiId?: number;
+}): Promise<TestBenutzer> {
+  const response = await fetch(`${BASE_URL}/api/benutzer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: daten.email,
+      passwort: daten.passwort,
+      rolle: daten.rolle,
+      partei: daten.parteiId ? { id: daten.parteiId } : null,
+    }),
+  });
+  if (!response.ok) throw new Error(`Benutzer erstellen fehlgeschlagen: ${response.status}`);
+  return response.json();
+}
+
+export async function deleteTestBenutzer(id: number): Promise<void> {
+  await fetch(`${BASE_URL}/api/benutzer/${id}`, { method: 'DELETE' });
+}
+
+/** Entfernt allfällige Benutzer-Altlasten mit dieser E-Mail (Pre-Cleanup). */
+export async function deleteTestBenutzerByEmail(email: string): Promise<void> {
+  const alle: TestBenutzer[] = await fetch(`${BASE_URL}/api/benutzer`).then((r) => r.json());
+  for (const benutzer of alle.filter((b) => b.email === email)) {
+    await deleteTestBenutzer(benutzer.id);
+  }
+}
+
+// ================================================================
 // Hilfsfunktion: Heute als ISO-Datum
 // ================================================================
 
 export function heute(): string {
   return new Date().toISOString().substring(0, 10);
+}
+
+/** ISO-Datum n Tage in der Zukunft (UC-016: «nächster Event»). */
+export function inTagen(tage: number): string {
+  const datum = new Date();
+  datum.setDate(datum.getDate() + tage);
+  return datum.toISOString().substring(0, 10);
 }

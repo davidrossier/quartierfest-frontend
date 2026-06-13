@@ -11,7 +11,7 @@
  *  - [HAPPY]  Mehrere Buffet-Beiträge erfassen
  *  - [ERROR]  Teilnahmeübersicht ohne Anmeldungen zeigt leere Liste
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { TeilnahmenPage } from '../pages/planung/teilnahmen.page';
 import {
   createTestEvent,

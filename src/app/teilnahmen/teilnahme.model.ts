@@ -32,3 +32,11 @@ export interface TeilnahmePayload {
   hilftAufraumen?: boolean;
   buffetBeitraege: BuffetBeitragEintrag[];
 }
+
+/** UC-016: PUT /api/teilnahmen/{id} — Whitelist ohne einladung. */
+export interface TeilnahmeUpdatePayload {
+  anzahlPersonenEffektiv?: number;
+  hilftAufstellen?: boolean;
+  hilftAufraumen?: boolean;
+  buffetBeitraege: BuffetBeitragEintrag[];
+}

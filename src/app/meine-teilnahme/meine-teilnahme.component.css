@@ -1,0 +1,128 @@
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+}
+
+h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--space-4);
+}
+
+.event-info {
+  margin: 0 0 var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.form-section {
+  background: var(--color-surface);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.form-group--checkbox label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+}
+
+input[type='number'],
+input[type='text'],
+select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
+  font-family: var(--font-family);
+}
+
+fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  margin: 0 0 var(--space-6);
+}
+
+legend {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: 0 var(--space-2);
+}
+
+.beitrag-zeile {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.beitrag-zeile select {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+button[type='submit'] {
+  padding: var(--space-2) var(--space-6);
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+}
+
+button[type='submit']:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn-sekundaer {
+  padding: var(--space-1) var(--space-3);
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.meldung {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  margin: 0 0 var(--space-4);
+}
+
+.meldung--fehler {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.meldung--erfolg {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.meldung--hinweis {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}

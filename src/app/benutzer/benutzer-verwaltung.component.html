@@ -1,0 +1,84 @@
+<div class="container">
+  <h1>Benutzerverwaltung</h1>
+
+  @if (fehler()) {
+    <p class="meldung meldung--fehler" role="alert">{{ fehler() }}</p>
+  }
+  @if (erfolg()) {
+    <p class="meldung meldung--erfolg">{{ erfolg() }}</p>
+  }
+
+  <section class="tabelle-section">
+    <h2>Accounts</h2>
+    @if (benutzer().length === 0) {
+      <p>Noch keine Benutzeraccounts vorhanden.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>E-Mail</th>
+            <th>Rolle</th>
+            <th>Partei</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of benutzer(); track b.id) {
+            <tr>
+              <td>{{ b.email }}</td>
+              <td>{{ b.rolle }}</td>
+              <td>{{ b.partei?.bezeichnung ?? '—' }}</td>
+              <td class="aktionen">
+                <button type="button" (click)="passwortZuruecksetzen(b)">Passwort zurücksetzen</button>
+                <button type="button" class="btn-loeschen" (click)="loeschen(b)">Löschen</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <section class="form-section">
+    <h2>Account anlegen</h2>
+    <form [formGroup]="erfassenForm" (ngSubmit)="erstellen()">
+      <div class="form-group">
+        <label for="email">E-Mail-Adresse</label>
+        <input id="email" type="email" formControlName="email" autocomplete="off" />
+        @if (erfassenForm.controls.email.touched && erfassenForm.controls.email.invalid) {
+          <p class="feld-fehler">Bitte eine gültige E-Mail-Adresse eingeben.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="passwort">Initialpasswort (mind. 10 Zeichen)</label>
+        <input id="passwort" type="text" formControlName="passwort" autocomplete="off" />
+        @if (erfassenForm.controls.passwort.touched && erfassenForm.controls.passwort.invalid) {
+          <p class="feld-fehler">Das Passwort muss mindestens 10 Zeichen lang sein.</p>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="rolle">Rolle</label>
+        <select id="rolle" formControlName="rolle">
+          <option value="PARTEI">PARTEI</option>
+          <option value="ORGANISATOR">ORGANISATOR</option>
+        </select>
+      </div>
+
+      @if (erfassenForm.controls.rolle.value === 'PARTEI') {
+        <div class="form-group">
+          <label for="parteiId">Partei</label>
+          <select id="parteiId" formControlName="parteiId">
+            <option [ngValue]="null">– Partei wählen –</option>
+            @for (partei of parteien(); track partei.id) {
+              <option [ngValue]="partei.id">{{ partei.bezeichnung }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <button type="submit" [disabled]="ladevorgang()">Account anlegen</button>
+    </form>
+  </section>
+</div>

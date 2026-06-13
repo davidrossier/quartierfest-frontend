@@ -12,7 +12,7 @@
  * Nicht abgedeckt:
  *  - Drucken (window.print()) — nicht testbar in Playwright ohne Mock
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { KonsumationslistePage } from '../pages/durchfuehrung/konsumationsliste.page';
 import {
   createTestEvent,

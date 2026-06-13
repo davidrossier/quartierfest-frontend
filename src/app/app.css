@@ -69,6 +69,36 @@
   border-bottom-color: var(--color-primary);
 }
 
+/* Angemeldeter Benutzer + Logout */
+.nav-benutzer {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.nav-benutzer__email {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
+.nav-benutzer__logout {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.nav-benutzer__logout:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
 main {
   min-height: calc(100vh - 56px);
 }

@@ -9,7 +9,7 @@
  *  - [HAPPY]  Alle Bestätigungen als versendet markieren
  *  - [ERROR]  Bestätigung ohne Konsumationsangebot zeigt Warnung
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { BestaetigungPage } from '../pages/planung/bestaetigung.page';
 import {
   createTestEvent,

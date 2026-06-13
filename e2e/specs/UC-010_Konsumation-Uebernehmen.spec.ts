@@ -9,7 +9,7 @@
  *  - [HAPPY]  Konsumationstotal wird korrekt berechnet und angezeigt
  *  - [ERROR]  Negative Anzahl wird abgelehnt
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { KonsumationenPage } from '../pages/durchfuehrung/konsumationen.page';
 import {
   createTestEvent,

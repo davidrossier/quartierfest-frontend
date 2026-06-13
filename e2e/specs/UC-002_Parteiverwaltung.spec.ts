@@ -12,7 +12,7 @@
  *  - [ERROR]  Pflichtfeld Adresse fehlt
  *  - [ERROR]  Partei mit bestehender Einladung löschen schlägt fehl
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { ParteienPage } from '../pages/parteien.page';
 import {
   createTestPerson,

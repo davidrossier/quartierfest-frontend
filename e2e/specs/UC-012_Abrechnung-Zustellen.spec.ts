@@ -8,7 +8,7 @@
  *  - [HAPPY]  Abrechnung als zugestellt markieren — Zustellungsdatum wird gesetzt
  *  - [HAPPY]  Zustellungskanal vor Versand ändern
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { AbrechnungenPage } from '../pages/nachbearbeitung/abrechnungen.page';
 import {
   createTestEvent,

@@ -10,7 +10,7 @@
  *  - [HAPPY]  Mahnung erfassen
  *  - [ERROR]  Zahlung ohne Datum speichern schlägt fehl
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 import { InkassoPage } from '../pages/nachbearbeitung/inkasso.page';
 import {
   createTestEvent,
