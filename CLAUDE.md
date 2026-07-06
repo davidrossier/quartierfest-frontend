@@ -17,6 +17,8 @@ npx ng generate component <name>
 npx ng generate service <name>
 ```
 
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) läuft bei Push/PR auf `main`: `npm ci` → `npm test -- --watch=false` → `npm run build -- --configuration production` (Node 24). Playwright-E2E läuft nur lokal (braucht Backend + PostgreSQL).
+
 ## Architecture
 
 Angular 21 standalone application — no NgModules. Every component uses the standalone API (`@Component` with `imports` array).
