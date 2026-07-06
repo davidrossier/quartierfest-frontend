@@ -13,6 +13,7 @@ Angular 21 Frontend für die Verwaltung des Quartierfests. Kommuniziert mit dem 
 npm start        # Dev-Server auf http://localhost:4200 (hot reload)
 npm run build    # Produktion Build (Ausgabe in dist/)
 npm test         # Unit-Tests mit Vitest
+npm run e2e      # Playwright-E2E (braucht laufendes Backend + npm start)
 ```
 
 ## Architektur
@@ -43,14 +44,14 @@ Event-abhängige Routen teilen sich den `EventKontextLayoutComponent`, der den E
 ### Stammdaten
 - **UC-001 Personenverwaltung** (`/personen`) — Erfassen, Bearbeiten, Löschen
 - **UC-002 Parteiverwaltung** (`/parteien`) — inkl. Personenzuordnung und Twint-Konfiguration
-- **Eventverwaltung** (`/events`) — Erfassen, Bearbeiten, Löschen
+- **UC-003 Eventverwaltung** (`/events`) — Erfassen, Bearbeiten, Löschen
 
 ### Event-Planung (`/planung/…`)
-- **UC-003 Einladungen** — Einzeln oder für alle Parteien erstellen, Rückmeldung erfassen
-- **UC-004 Teilnahmen** — Aus Anmeldungen übernehmen, effektive Personenzahl erfassen
-- **UC-005 Allgemeinausgaben** — Kosten pro Event erfassen
-- **UC-006 Konsumationsangebote** — Angebote und Preise pro Event
-- **UC-008 Bestätigung** — Versandstatus der Einladungsbestätigungen
+- **UC-004 Einladungen** — Einzeln oder für alle Parteien erstellen, Rückmeldung erfassen
+- **UC-005 Teilnahmen** — Aus Anmeldungen übernehmen, effektive Personenzahl erfassen
+- **UC-006 Bestätigung** — Versandstatus der Einladungsbestätigungen
+- **UC-007 Allgemeinausgaben** — Kosten pro Event erfassen
+- **UC-008 Konsumationsangebote** — Angebote und Preise pro Event
 
 ### Event-Durchführung (`/durchfuehrung/…`)
 - **UC-009 Konsumationsliste** — Druckbare Matrix (Teilnahmen × Angebote) für händische Erfassung
@@ -60,6 +61,11 @@ Event-abhängige Routen teilen sich den `EventKontextLayoutComponent`, der den E
 - **UC-011 Abrechnung erstellen** — Automatische Berechnung (Allgemeinkosten + Konsumation pro Partei)
 - **UC-012 Abrechnung zustellen** — Zustellungskanal wählen, Zustellung markieren
 - **UC-013 Inkasso** — Zahlungen und Mahnungen erfassen, Offene-Posten-Übersicht
+
+### Auth & Partei-Sicht
+- **UC-014 Login** (`/login`) — Eigenbau-JWT via `POST /api/auth/login`, Token in `sessionStorage`, Guards + Interceptor, rollenbasiertes Routing (Dev-Login: `admin@quartierfest.local` / `quartierfest-admin`)
+- **UC-015 Benutzerverwaltung** (`/admin/benutzer`) — Accounts anlegen, Passwort-Reset, Löschen (nur ORGANISATOR)
+- **UC-016 Meine Teilnahme** (`/meine-teilnahme`) — PARTEI bestätigt/bearbeitet die eigene Teilnahme zum nächsten Event
 
 ## Shared Utilities
 
@@ -71,14 +77,16 @@ REST API auf `http://localhost:8080`. Spezifikationen unter `../quartierfest-bac
 
 | Ressource | Endpunkte |
 |---|---|
-| Personen | `GET/POST /api/persons`, `DELETE /api/persons/:id` |
+| Personen | `GET/POST /api/persons`, `PUT /api/persons/:id`, `DELETE /api/persons/:id` |
 | Parteien | `GET/POST /api/parteien`, `PUT /api/parteien/:id`, `DELETE /api/parteien/:id` |
 | Events | `GET/POST /api/events`, `PUT /api/events/:id`, `DELETE /api/events/:id` |
 | Einladungen | `GET/POST /api/einladungen`, `DELETE /api/einladungen/:id` |
-| Teilnahmen | `GET/POST /api/teilnahmen`, `DELETE /api/teilnahmen/:id` |
+| Teilnahmen | `GET/POST /api/teilnahmen`, `DELETE /api/teilnahmen/:id`, `GET /api/teilnahmen/meine` + `PUT /api/teilnahmen/:id` (UC-016) |
 | Allgemeinausgaben | `GET/POST /api/allgemeinausgaben`, `DELETE /api/allgemeinausgaben/:id` |
 | Konsumationsangebote | `GET/POST /api/konsumationsangebote`, `DELETE /api/konsumationsangebote/:id` |
 | Konsumationen | `GET/POST /api/konsumationen`, `DELETE /api/konsumationen/:id` |
 | Abrechnungen | `GET/POST /api/abrechnungen`, `DELETE /api/abrechnungen/:id` |
 | Zahlungen | `GET/POST /api/zahlungen`, `DELETE /api/zahlungen/:id` |
 | Mahnungen | `GET/POST /api/mahnungen`, `DELETE /api/mahnungen/:id` |
+| Benutzer | `GET/POST /api/benutzer`, `DELETE /api/benutzer/:id`, `PUT /api/benutzer/:id/passwort` |
+| Auth | `POST /api/auth/login` → `{token}` (HS256-JWT, 12 h) |
