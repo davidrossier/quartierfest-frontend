@@ -125,7 +125,7 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 
 **Teilnahmeverwaltung** (`src/app/teilnahmen/`)
 - `teilnahme.model.ts` — `Teilnahme` (id, einladung, anzahlPersonenEffektiv?, hilftAufstellen?, hilftAufraumen?, buffetBeitraege: BuffetBeitragEintrag[]), `TeilnahmePayload`, `TeilnahmeUpdatePayload` (UC-016-Whitelist ohne einladung)
-- `teilnahme.service.ts` — `GET/POST/DELETE /api/teilnahmen`, `getMeine()` (UC-016), `update(id, dto)` (UC-016)
+- `teilnahme.service.ts` — `GET/POST/DELETE /api/teilnahmen`, `getMeine()` (UC-016), `update(id, dto)` (UC-005/UC-016 — alle Bearbeitungen laufen über den Whitelist-PUT; POST mit `id` lehnt das Backend mit 400 ab, REST-001)
 - FormArray für mehrere Büffetbeiträge
 
 **Konsumationsangebote** (`src/app/konsumationsangebote/`)

@@ -22,7 +22,7 @@ export class TeilnahmeService {
     return this.http.post<Teilnahme>(this.baseUrl, payload);
   }
 
-  /** UC-016: Whitelist-Update — nur die vier PARTEI-editierbaren Felder. */
+  /** Whitelist-Update (UC-005/UC-016) — nur die vier editierbaren Felder, einladung nie (REST-001). */
   update(id: number, payload: TeilnahmeUpdatePayload): Observable<Teilnahme> {
     return this.http.put<Teilnahme>(`${this.baseUrl}/${id}`, payload);
   }

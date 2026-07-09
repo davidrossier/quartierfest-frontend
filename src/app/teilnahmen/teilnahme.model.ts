@@ -25,7 +25,6 @@ export interface Teilnahme {
 }
 
 export interface TeilnahmePayload {
-  id?: number;
   einladung: { id: number };
   anzahlPersonenEffektiv?: number;
   hilftAufstellen?: boolean;

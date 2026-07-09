@@ -163,9 +163,7 @@ export class TeilnahmenVerwaltungComponent implements OnInit {
       .map(b => ({ art: b.art as BuffetBeitrag, beschreibung: b.beschreibung || undefined }));
 
     this.teilnahmeService
-      .save({
-        id: editTeilnahme.id,
-        einladung: { id: editTeilnahme.einladung.id },
+      .update(editTeilnahme.id, {
         anzahlPersonenEffektiv: anzahlPersonenEffektiv != null ? Number(anzahlPersonenEffektiv) : undefined,
         hilftAufstellen: hilftAufstellen ?? false,
         hilftAufraumen: hilftAufraumen ?? false,
