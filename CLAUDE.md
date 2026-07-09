@@ -219,4 +219,4 @@ REST API läuft lokal auf `http://localhost:8080`. Spezifikationen: `../quartier
 - `e2e/fixtures.ts`: gemeinsame `test`-Fixture injiziert das Token des Bootstrap-Organisators via `addInitScript` in `sessionStorage` — alle Organisator-Specs importieren `{ test, expect } from '../fixtures'` statt `@playwright/test`.
 - `UC-014_Benutzer-Anmelden.spec.ts` und `UC-016_Teilnahme-Bestaetigen.spec.ts` importieren bewusst `@playwright/test` (UC-014 testet den UI-Login selbst; UC-016 meldet sich als PARTEI-Benutzer an).
 - Auth-Helper in `e2e/helpers/api-helpers.ts`: `login()`, `getOrganisatorToken()`, `createTestBenutzer()`, `deleteTestBenutzerByEmail()`, `inTagen()`.
-- Voraussetzung: Backend (Port 8080, Default-Profil) und `npm start` (Port 4200) laufen; `npx playwright install chromium` einmalig.
+- Voraussetzung: Backend (Port 8080, `dev`-Profil — `./mvnw spring-boot:run` setzt es automatisch) und `npm start` (Port 4200) laufen; `npx playwright install chromium` einmalig.
