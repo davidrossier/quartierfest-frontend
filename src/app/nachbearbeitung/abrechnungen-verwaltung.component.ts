@@ -10,6 +10,11 @@ import { ParteiService } from '../parteien/partei.service';
 import { EventKontextService } from '../event-kontext/event-kontext.service';
 import { Abrechnung, ZustellungsKanal } from './abrechnung.model';
 
+/** Kaufmännisch auf 2 Nachkommastellen runden (Backend speichert numeric(10,2), DB-002). */
+function rundeAufRappen(betrag: number): number {
+  return Math.round(betrag * 100) / 100;
+}
+
 @Component({
   selector: 'app-abrechnungen-verwaltung',
   imports: [],
@@ -117,8 +122,10 @@ export class AbrechnungenVerwaltungComponent implements OnInit {
 
         const payloads = evtTeilnahmen.map(t => {
           const partei = parteiMap.get(t.einladung.partei.id);
-          const anteil = kostenProPerson * (t.anzahlPersonenEffektiv ?? 0);
-          const konsumation = konsumationTotals.get(t.id) ?? 0;
+          // DB-002: Backend speichert numeric(10,2) — hier runden, damit totalBetrag = anteil + konsumation
+          // auch nach der DB-Rundung exakt stimmt (Rappenrundung auf 0.05 → BIZ-001)
+          const anteil = rundeAufRappen(kostenProPerson * (t.anzahlPersonenEffektiv ?? 0));
+          const konsumation = rundeAufRappen(konsumationTotals.get(t.id) ?? 0);
           return {
             teilnahme: { id: t.id },
             anteilAllgemeinkosten: anteil,
