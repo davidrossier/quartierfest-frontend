@@ -3,6 +3,8 @@
 name: E2E
 
 on:
+  push: # TEMPORÄR für den Testlauf vor dem Merge – wird vor dem PR wieder entfernt
+    branches: [feature/ci-001-e2e-nightly]
   schedule:
     - cron: '0 3 * * *' # täglich 03:00 UTC
   workflow_dispatch:
