@@ -13,7 +13,7 @@ Angular 21 Frontend für die Verwaltung des Quartierfests. Kommuniziert mit dem 
 npm start        # Dev-Server auf http://localhost:4200 (hot reload)
 npm run build    # Produktion Build (Ausgabe in dist/)
 npm test         # Unit-Tests mit Vitest
-npm run e2e      # Playwright-E2E (braucht laufendes Backend + npm start)
+npm run e2e      # Playwright-E2E (braucht laufendes Backend + npm start; in CI nächtlich via .github/workflows/e2e.yml)
 npm run api:generate  # API-Typen aus ../quartierfest-backend/specs/openapi.json neu erzeugen (API-001)
 npm run api:check     # dito + Fehler, wenn src/app/api/schema.d.ts vom Generat abweicht (Drift-Check der CI)
 ```
@@ -76,6 +76,10 @@ Event-abhängige Routen teilen sich den `EventKontextLayoutComponent`, der den E
 Der API-Contract liegt als OpenAPI-Spec im Backend-Repo (`../quartierfest-backend/specs/openapi.json`, dort via Integrationstest gegen `/v3/api-docs` abgeglichen). Daraus wird `src/app/api/schema.d.ts` generiert und eingecheckt. Alle `*.model.ts` leiten ihre **Antwort-Typen** daraus ab (`Persisted<…>`), die `*Payload`-Typen bleiben handgeschrieben, bis das Backend getrennte Request-/Response-DTOs liefert (Stufe 2).
 
 Die CI checkt `specs/openapi.json` von Backend-`main` aus und schlägt fehl, wenn das Generat nicht mehr zum eingecheckten `schema.d.ts` passt. Bei einer Contract-Änderung deshalb: Backend-PR zuerst mergen, dann hier `npm run api:generate`, Typfehler beheben, `schema.d.ts` mitcommitten.
+
+## E2E in der CI (CI-001)
+
+`.github/workflows/e2e.yml` führt die Playwright-Suite nächtlich (03:00 UTC) und auf Knopfdruck gegen ein echtes Backend aus: PostgreSQL-16-Service-Container, Backend-Repo auschecken und mit `./mvnw spring-boot:run` (dev-Profil) starten, Readiness über `GET /actuator/health`, dann `npm start` und `npm run e2e`. Der Playwright-Report ist als Artifact `playwright-report` abrufbar, bei Fehlern zusätzlich `server-logs`. Gegen einen Backend-Feature-Branch: `gh workflow run e2e.yml -f backend_ref=<branch>`.
 
 ## Shared Utilities
 

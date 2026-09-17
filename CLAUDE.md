@@ -19,7 +19,7 @@ npx ng generate component <name>
 npx ng generate service <name>
 ```
 
-**CI:** GitHub Actions (`.github/workflows/ci.yml`) läuft bei Push/PR auf `main`: `npm ci` → Sparse-Checkout von `specs/openapi.json` aus dem Backend-Repo (`main`) → `npm run api:check` (API-001-Drift-Check) → `npm test -- --watch=false` → `npm run build -- --configuration production` (Node 24). Playwright-E2E läuft nur lokal (braucht Backend + PostgreSQL).
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) läuft bei Push/PR auf `main`: `npm ci` → Sparse-Checkout von `specs/openapi.json` aus dem Backend-Repo (`main`) → `npm run api:check` (API-001-Drift-Check) → `npm test -- --watch=false` → `npm run build -- --configuration production` (Node 24). **E2E-CI (CI-001):** `.github/workflows/e2e.yml` läuft nächtlich (03:00 UTC) und per `workflow_dispatch` (Input `backend_ref`, Default `main`): PostgreSQL-16-Service, Backend-Checkout + `./mvnw spring-boot:run` (dev-Profil), `npm start`, Warten auf `GET /actuator/health` = `UP`, `npm run e2e` mit `retries: 2`; `playwright-report/` immer und Server-Logs bei Fehler als Artifact. Manueller Start: `gh workflow run e2e.yml -f backend_ref=<branch>`.
 
 ## Architecture
 
@@ -224,3 +224,4 @@ REST API läuft lokal auf `http://localhost:8080`. Spezifikationen: `../quartier
 - `UC-014_Benutzer-Anmelden.spec.ts` und `UC-016_Teilnahme-Bestaetigen.spec.ts` importieren bewusst `@playwright/test` (UC-014 testet den UI-Login selbst; UC-016 meldet sich als PARTEI-Benutzer an).
 - Auth-Helper in `e2e/helpers/api-helpers.ts`: `login()`, `getOrganisatorToken()`, `createTestBenutzer()`, `deleteTestBenutzerByEmail()`, `inTagen()`.
 - Voraussetzung: Backend (Port 8080, `dev`-Profil — `./mvnw spring-boot:run` setzt es automatisch) und `npm start` (Port 4200) laufen; `npx playwright install chromium` einmalig.
+- In CI: siehe **E2E-CI** oben (`e2e.yml`); `playwright-report/` und `test-results/` sind im Repo getrackt, nach lokalen Läufen nicht mitcommitten.
