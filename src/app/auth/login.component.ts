@@ -38,12 +38,20 @@ export class LoginComponent {
       },
       error: (err) => {
         this.ladevorgang.set(false);
-        this.fehler.set(
-          err?.status === 401
-            ? 'E-Mail-Adresse oder Passwort falsch.'
-            : 'Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.',
-        );
+        this.fehler.set(this.fehlermeldung(err?.status));
       },
     });
+  }
+
+  /** UC-014 E1 (401) und SEC-002 Brute-Force-Sperre (429) — bewusst generische Meldungen. */
+  private fehlermeldung(status: number | undefined): string {
+    switch (status) {
+      case 401:
+        return 'E-Mail-Adresse oder Passwort falsch.';
+      case 429:
+        return 'Zu viele Fehlversuche. Bitte versuchen Sie es in 15 Minuten erneut.';
+      default:
+        return 'Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.';
+    }
   }
 }
