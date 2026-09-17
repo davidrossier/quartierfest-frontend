@@ -64,6 +64,26 @@ describe('LoginComponent (UC-014)', () => {
     expect(TestBed.inject(AuthService).istAngemeldet()).toBe(false);
   });
 
+  it('zeigt bei 429 den Hinweis auf die Sperre (SEC-002)', () => {
+    const fixture = TestBed.createComponent(LoginComponent);
+    const component = fixture.componentInstance;
+
+    component.loginForm.setValue({ email: 'orga@quartier.ch', passwort: 'falsch' });
+    component.anmelden();
+
+    httpMock
+      .expectOne(`${environment.apiUrl}/api/auth/login`)
+      .flush(
+        { status: 429, message: 'Zu viele Fehlversuche. Bitte später erneut versuchen.' },
+        { status: 429, statusText: 'Too Many Requests' },
+      );
+
+    expect(component.fehler()).toBe(
+      'Zu viele Fehlversuche. Bitte versuchen Sie es in 15 Minuten erneut.',
+    );
+    expect(TestBed.inject(AuthService).istAngemeldet()).toBe(false);
+  });
+
   it('sendet bei unvollständigem Formular keinen Request', () => {
     const fixture = TestBed.createComponent(LoginComponent);
     const component = fixture.componentInstance;
