@@ -1,0 +1,113 @@
+# CI-001: Playwright-E2E (UC-001..016) gegen echtes Backend + PostgreSQL.
+# Läuft nächtlich und manuell; `backend_ref` erlaubt den Lauf gegen einen Backend-Feature-Branch.
+name: E2E
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # täglich 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      backend_ref:
+        description: 'Backend-Branch/Tag/SHA (davidrossier/quartierfest-backend)'
+        required: false
+        default: 'main'
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: quartierfest
+          POSTGRES_USER: qfuser
+          POSTGRES_PASSWORD: qfpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Backend auschecken
+        uses: actions/checkout@v5
+        with:
+          repository: davidrossier/quartierfest-backend
+          ref: ${{ inputs.backend_ref || 'main' }}
+          path: backend
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Dependencies installieren
+        run: npm ci
+
+      - name: Playwright-Browser installieren
+        run: npx playwright install chromium --with-deps
+
+      # spring-boot:run setzt das dev-Profil (offene Security-Chain, SEC-001) – wie lokal für die E2E.
+      - name: Backend starten (dev-Profil)
+        working-directory: backend
+        run: |
+          nohup ./mvnw --batch-mode --no-transfer-progress spring-boot:run > ../backend.log 2>&1 &
+
+      - name: Dev-Server starten
+        run: |
+          nohup npm start -- --no-open > frontend.log 2>&1 &
+        env:
+          NG_CLI_ANALYTICS: 'false'
+
+      # OPS-001: /actuator/health ist ohne Token erreichbar und meldet UP erst nach Flyway + DB-Check.
+      - name: Auf Backend warten (/actuator/health)
+        run: |
+          for i in $(seq 1 90); do
+            if curl -sf http://localhost:8080/actuator/health | grep -q '"UP"'; then
+              echo "Backend bereit nach ${i} Versuchen"; exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::Backend nicht bereit"; tail -100 backend.log; exit 1
+
+      - name: Auf Dev-Server warten
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null http://localhost:4200/; then
+              echo "Dev-Server bereit nach ${i} Versuchen"; exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::Dev-Server nicht bereit"; tail -50 frontend.log; exit 1
+
+      - name: Playwright-E2E
+        run: npm run e2e
+
+      - name: Playwright-Report hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Server-Logs hochladen
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-logs
+          path: |
+            backend.log
+            frontend.log
+          retention-days: 14
