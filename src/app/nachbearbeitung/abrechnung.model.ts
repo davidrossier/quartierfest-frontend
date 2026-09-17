@@ -1,28 +1,13 @@
-export type ZustellungsKanal = 'TWINT' | 'EMAIL' | 'PAPIER';
+import type { Abrechnung as ApiAbrechnung } from '../api/schema';
+import { Persisted } from '../api/types';
+import { Teilnahme } from '../teilnahmen/teilnahme.model';
 
-export interface Abrechnung {
-  id: number;
-  teilnahme: {
-    id: number;
-    einladung: {
-      id: number;
-      event: { id: number; datum: string; standort: string };
-      partei: {
-        id: number;
-        bezeichnung: string;
-        adresse: string;
-        twintAktiv: boolean;
-        twintMobilenummer?: string;
-      };
-    };
-    anzahlPersonenEffektiv?: number;
-  };
-  anteilAllgemeinkosten: number;
-  totalKonsumation: number;
-  totalBetrag: number;
-  zustellungskanal: ZustellungsKanal;
-  zustellungsDatum?: string;
-}
+export type ZustellungsKanal = ApiAbrechnung['zustellungskanal'];
+
+/** Antwort-Typ aus dem OpenAPI-Schema (API-001). */
+export type Abrechnung = Persisted<Omit<ApiAbrechnung, 'teilnahme'>> & {
+  teilnahme: Teilnahme;
+};
 
 export interface AbrechnungPayload {
   id?: number;

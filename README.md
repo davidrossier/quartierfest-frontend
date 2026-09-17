@@ -14,6 +14,8 @@ npm start        # Dev-Server auf http://localhost:4200 (hot reload)
 npm run build    # Produktion Build (Ausgabe in dist/)
 npm test         # Unit-Tests mit Vitest
 npm run e2e      # Playwright-E2E (braucht laufendes Backend + npm start)
+npm run api:generate  # API-Typen aus ../quartierfest-backend/specs/openapi.json neu erzeugen (API-001)
+npm run api:check     # dito + Fehler, wenn src/app/api/schema.d.ts vom Generat abweicht (Drift-Check der CI)
 ```
 
 ## Architektur
@@ -27,6 +29,8 @@ Angular 21 **Standalone**-Anwendung — keine NgModules. Jede Komponente verwend
 | `src/app/app.routes.ts` | Routen-Definitionen |
 | `src/app/app.html` | Root-Komponente mit Navigation und `<router-outlet>` |
 | `src/styles.css` | Globale Design-Tokens und gemeinsame Komponenten-Styles |
+| `src/app/api/schema.d.ts` | Generierte API-Typen (openapi-typescript, **nicht von Hand editieren**) |
+| `src/app/api/types.ts` | `Persisted<T, K>` — Antwort-Typ mit gesetzter `id` |
 
 ## Navigationsstruktur
 
@@ -66,6 +70,12 @@ Event-abhängige Routen teilen sich den `EventKontextLayoutComponent`, der den E
 - **UC-014 Login** (`/login`) — Eigenbau-JWT via `POST /api/auth/login`, Token in `sessionStorage`, Guards + Interceptor, rollenbasiertes Routing (Dev-Login: `admin@quartierfest.local` / `quartierfest-admin`)
 - **UC-015 Benutzerverwaltung** (`/admin/benutzer`) — Accounts anlegen, Passwort-Reset, Löschen (nur ORGANISATOR)
 - **UC-016 Meine Teilnahme** (`/meine-teilnahme`) — PARTEI bestätigt/bearbeitet die eigene Teilnahme zum nächsten Event
+
+## API-Typen (API-001)
+
+Der API-Contract liegt als OpenAPI-Spec im Backend-Repo (`../quartierfest-backend/specs/openapi.json`, dort via Integrationstest gegen `/v3/api-docs` abgeglichen). Daraus wird `src/app/api/schema.d.ts` generiert und eingecheckt. Alle `*.model.ts` leiten ihre **Antwort-Typen** daraus ab (`Persisted<…>`), die `*Payload`-Typen bleiben handgeschrieben, bis das Backend getrennte Request-/Response-DTOs liefert (Stufe 2).
+
+Die CI checkt `specs/openapi.json` von Backend-`main` aus und schlägt fehl, wenn das Generat nicht mehr zum eingecheckten `schema.d.ts` passt. Bei einer Contract-Änderung deshalb: Backend-PR zuerst mergen, dann hier `npm run api:generate`, Typfehler beheben, `schema.d.ts` mitcommitten.
 
 ## Shared Utilities
 

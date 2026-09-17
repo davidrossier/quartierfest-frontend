@@ -20,6 +20,22 @@ jobs:
       - name: Dependencies installieren
         run: npm ci
 
+      # API-001: Contract-Drift-Check – die eingecheckten API-Typen (src/app/api/schema.d.ts) müssen
+      # zur OpenAPI-Spec auf Backend-main passen (Backend-PRs deshalb vor Frontend-PRs mergen).
+      - name: Backend-API-Contract auschecken (API-001)
+        uses: actions/checkout@v5
+        with:
+          repository: davidrossier/quartierfest-backend
+          ref: main
+          path: backend-contract
+          sparse-checkout: specs/openapi.json
+          sparse-checkout-cone-mode: false
+
+      - name: API-Typen generieren und Drift prüfen
+        run: npm run api:check
+        env:
+          OPENAPI_SPEC: backend-contract/specs/openapi.json
+
       - name: Vitest-Unit-Tests
         run: npm test -- --watch=false
 

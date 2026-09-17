@@ -1,16 +1,13 @@
-export interface Konsumation {
-  id: number;
-  teilnahme: {
-    id: number;
-    einladung: {
-      id: number;
-      event: { id: number; datum: string; standort: string };
-      partei: { id: number; bezeichnung: string };
-    };
-  };
-  konsumationsangebot: { id: number; bezeichnung: string; preis: number };
-  anzahl: number;
-}
+import type { Konsumation as ApiKonsumation } from '../api/schema';
+import { Persisted } from '../api/types';
+import { Konsumationsangebot } from '../konsumationsangebote/konsumationsangebot.model';
+import { Teilnahme } from '../teilnahmen/teilnahme.model';
+
+/** Antwort-Typ aus dem OpenAPI-Schema (API-001). */
+export type Konsumation = Persisted<Omit<ApiKonsumation, 'teilnahme' | 'konsumationsangebot'>> & {
+  teilnahme: Teilnahme;
+  konsumationsangebot: Konsumationsangebot;
+};
 
 export interface KonsumationPayload {
   id?: number;
