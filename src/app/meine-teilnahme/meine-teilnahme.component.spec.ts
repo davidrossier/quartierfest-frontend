@@ -10,9 +10,16 @@ const teilnahme: Teilnahme = {
   id: 4,
   einladung: {
     id: 3,
-    event: { id: 1, datum: '2026-08-15', standort: 'Buchlenwiese' },
-    partei: { id: 2, bezeichnung: 'Familie Müller' },
+    event: { id: 1, datum: '2026-08-15', startzeit: '17:00', standort: 'Buchlenwiese' },
+    partei: {
+      id: 2,
+      bezeichnung: 'Familie Müller',
+      adresse: 'Buchlenweg 1',
+      twintAktiv: false,
+      personen: [],
+    },
     status: 'ANGEMELDET',
+    bestaetigungVersendet: false,
   },
   anzahlPersonenEffektiv: 3,
   hilftAufstellen: true,

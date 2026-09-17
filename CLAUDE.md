@@ -9,6 +9,8 @@ npm start          # Dev server at http://localhost:4200 (hot reload)
 npm run build      # Production build (output in dist/)
 npm run watch      # Dev build in watch mode
 npm test           # Run unit tests with Vitest
+npm run api:generate  # API-Typen aus ../quartierfest-backend/specs/openapi.json neu erzeugen (API-001)
+npm run api:check     # dito + git diff --exit-code auf src/app/api/schema.d.ts (Drift-Check der CI)
 ```
 
 To generate Angular artifacts:
@@ -17,7 +19,7 @@ npx ng generate component <name>
 npx ng generate service <name>
 ```
 
-**CI:** GitHub Actions (`.github/workflows/ci.yml`) läuft bei Push/PR auf `main`: `npm ci` → `npm test -- --watch=false` → `npm run build -- --configuration production` (Node 24). Playwright-E2E läuft nur lokal (braucht Backend + PostgreSQL).
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) läuft bei Push/PR auf `main`: `npm ci` → Sparse-Checkout von `specs/openapi.json` aus dem Backend-Repo (`main`) → `npm run api:check` (API-001-Drift-Check) → `npm test -- --watch=false` → `npm run build -- --configuration production` (Node 24). Playwright-E2E läuft nur lokal (braucht Backend + PostgreSQL).
 
 ## Architecture
 
@@ -30,11 +32,13 @@ Angular 21 standalone application — no NgModules. Every component uses the sta
 - `src/app/app.ts` — Root component with `<router-outlet>`
 - `src/app/shared/sortierung.ts` — Shared table sorting utilities
 
+**API-Contract (API-001):** `src/app/api/schema.d.ts` ist aus `../quartierfest-backend/specs/openapi.json` generiert (`npm run api:generate`, openapi-typescript mit `--root-types`) und eingecheckt — nie von Hand editieren, steht in `.prettierignore`. Alle `*.model.ts` leiten ihre Antwort-Typen daraus ab: `Persisted<T, K>` (`src/app/api/types.ts`) setzt `id: number` und macht die Felder `K` Pflicht, die das Backend immer liefert, im Entity-Schema aber optional sind (primitive `boolean`, initialisierte Collections). Verschachtelte Referenzen werden pro Modell auf den jeweiligen Modell-Typ umgebogen (`Omit<ApiEinladung, 'event' | 'partei'> & { event: Event; partei: Partei }`). Die `*Payload`-Typen bleiben handgeschrieben (Entity = Request- und Response-Schema, `{ id }`-Referenzen sind dort nicht ausdrückbar) — bis API-001 Stufe 2 (DTOs). Bei Contract-Änderung: Backend-PR zuerst mergen, dann `npm run api:generate`, Typfehler beheben, `schema.d.ts` mitcommitten.
+
 **State management:** Angular Signals (`signal`, `computed`) for local/shared state; RxJS Observables for HTTP calls.
 
 **Testing:** Vitest (not Karma/Jasmine). Test files are `*.spec.ts` alongside source files.
 
-**Formatting:** Prettier with 100-char line width, single quotes. No ESLint configured.
+**Formatting:** Prettier with 100-char line width, single quotes (`src/app/api/schema.d.ts` via `.prettierignore` ausgenommen). No ESLint configured.
 
 **TypeScript:** Strict mode with `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, Angular strict template checking.
 
@@ -91,17 +95,17 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 ### Stammdaten
 
 **Personenverwaltung** (`src/app/personen/`)
-- `person.model.ts` — `Person` (id, vorname, name, telefonnummer?, mobilenummer?, email?), `PersonPayload`
+- `person.model.ts` — `Person` (aus Schema, API-001), `PersonPayload`
 - `person.service.ts` — `GET/POST/PUT/DELETE /api/persons`
 - Route `/personen`
 
 **Parteiverwaltung** (`src/app/parteien/`)
-- `partei.model.ts` — `Partei` (id, bezeichnung, adresse, twintAktiv, twintMobilenummer?, personen: Person[]), `ParteiPayload` (personenIds: number[])
+- `partei.model.ts` — `Partei` (aus Schema; `personen: Person[]` und `twintAktiv` als Pflicht), `ParteiPayload` (personenIds: number[])
 - `partei.service.ts` — `GET/POST/PUT/DELETE /api/parteien`
 - Route `/parteien`
 
 **Eventverwaltung** (`src/app/events/`)
-- `event.model.ts` — `Event` (id, datum, startzeit, standort, alternativerStandort?, zeitAufstellen?, zeitAufraumen?), `EventPayload`
+- `event.model.ts` — `Event` (aus Schema), `EventPayload`
 - `event.service.ts` — `GET/POST/PUT/DELETE /api/events`
 - Route `/events`
 
@@ -118,18 +122,18 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 ### Planung
 
 **Einladungsverwaltung** (`src/app/einladungen/`)
-- `einladung.model.ts` — `Einladung` (id, event, partei, status: EinladungStatus, anzahlPersonen?, hilftAufstellen?, hilftAufraumen?, buffetBeitrag?: BuffetBeitrag, buffetBeitragBeschreibung?, bestaetigungVersendet), `EinladungPayload`
-- Types: `EinladungStatus = 'OFFEN' | 'ANGEMELDET' | 'ABGEMELDET'`, `BuffetBeitrag = 'KEINER' | 'SALAT' | 'BROT_ZOPF' | 'DESSERT' | 'WEITERE'`
+- `einladung.model.ts` — `Einladung` (aus Schema; `event: Event`, `partei: Partei`, `bestaetigungVersendet` Pflicht), `EinladungPayload`
+- Types `EinladungStatus`, `BuffetBeitrag` = Schema-Enums (`OFFEN | ANGEMELDET | ABGEMELDET`, `KEINER | SALAT | BROT_ZOPF | DESSERT | WEITERE`)
 - `einladung.service.ts` — `GET/POST/DELETE /api/einladungen`
 - Bulk-Erstellung für alle Parteien, Status- und Büffetbeitrags-Verwaltung
 
 **Teilnahmeverwaltung** (`src/app/teilnahmen/`)
-- `teilnahme.model.ts` — `Teilnahme` (id, einladung, anzahlPersonenEffektiv?, hilftAufstellen?, hilftAufraumen?, buffetBeitraege: BuffetBeitragEintrag[]), `TeilnahmePayload`, `TeilnahmeUpdatePayload` (UC-016-Whitelist ohne einladung)
+- `teilnahme.model.ts` — `Teilnahme` (aus Schema; `einladung: Einladung`, `buffetBeitraege: BuffetBeitragEintrag[]` Pflicht), `TeilnahmePayload`, `TeilnahmeUpdatePayload` (Schema `TeilnahmeUpdateRequest`, UC-016-Whitelist ohne einladung)
 - `teilnahme.service.ts` — `GET/POST/DELETE /api/teilnahmen`, `getMeine()` (UC-016), `update(id, dto)` (UC-005/UC-016 — alle Bearbeitungen laufen über den Whitelist-PUT; POST mit `id` lehnt das Backend mit 400 ab, REST-001)
 - FormArray für mehrere Büffetbeiträge
 
 **Konsumationsangebote** (`src/app/konsumationsangebote/`)
-- `konsumationsangebot.model.ts` — `Konsumationsangebot` (id, event, bezeichnung, preis), `KonsumationsangebotPayload`
+- `konsumationsangebot.model.ts` — `Konsumationsangebot` (aus Schema; `event: Event`), `KonsumationsangebotPayload`
 - `konsumationsangebot.service.ts` — `GET/POST/DELETE /api/konsumationsangebote`
 
 **Bestätigungsübersicht** (`src/app/bestaetigung/`)
@@ -137,7 +141,7 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 - Markieren als "Bestätigung versendet"
 
 **Allgemeinausgaben** (`src/app/allgemeinausgaben/`)
-- `allgemeinausgabe.model.ts` — `Allgemeinausgabe` (id, event, beschreibung, herkunft?, betrag), `AllgemeinausgabePayload`
+- `allgemeinausgabe.model.ts` — `Allgemeinausgabe` (aus Schema; `event: Event`), `AllgemeinausgabePayload`
 - `allgemeinausgabe.service.ts` — `GET/POST/DELETE /api/allgemeinausgaben`
 
 ### Durchführung
@@ -147,35 +151,35 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 - Nutzt TeilnahmeService und KonsumationsangebotService
 
 **Konsumationsverwaltung** (`src/app/konsumationen/`)
-- `konsumation.model.ts` — `Konsumation` (id, teilnahme, konsumationsangebot, anzahl), `KonsumationPayload`
+- `konsumation.model.ts` — `Konsumation` (aus Schema; `teilnahme: Teilnahme`, `konsumationsangebot: Konsumationsangebot`), `KonsumationPayload`
 - `konsumation.service.ts` — `GET/POST/DELETE /api/konsumationen`
 - Matrix-Eingabe: Teilnahmen × Angebote
 
 ### Nachbearbeitung
 
 **Abrechnungen** (`src/app/nachbearbeitung/`)
-- `abrechnung.model.ts` — `Abrechnung` (id, teilnahme, anteilAllgemeinkosten, totalKonsumation, totalBetrag, zustellungskanal: ZustellungsKanal, zustellungsDatum?), `AbrechnungPayload`
-- Type: `ZustellungsKanal = 'TWINT' | 'EMAIL' | 'PAPIER'`
+- `abrechnung.model.ts` — `Abrechnung` (aus Schema; `teilnahme: Teilnahme`), `AbrechnungPayload`
+- Type `ZustellungsKanal` = Schema-Enum (`TWINT | EMAIL | PAPIER`)
 - `abrechnung.service.ts` — `GET/POST/DELETE /api/abrechnungen`
 - Berechnung von Anteilen, Zustellungskanal-Verwaltung
 
 **Inkasso** (`src/app/nachbearbeitung/`)
-- `mahnung.model.ts` — `Mahnung` (id, abrechnung, datum, bemerkung?), `MahnungPayload`
+- `mahnung.model.ts` — `Mahnung` (aus Schema; `abrechnung: Abrechnung`), `MahnungPayload`
 - `mahnung.service.ts` — `GET/POST/DELETE /api/mahnungen`
-- `zahlung.model.ts` — `Zahlung` (id, abrechnung, zahlungskanal: ZahlungsKanal, datum, betrag), `ZahlungPayload`
-- Type: `ZahlungsKanal = 'TWINT' | 'UEBERWEISUNG' | 'BAR'`
+- `zahlung.model.ts` — `Zahlung` (aus Schema; `abrechnung: Abrechnung`), `ZahlungPayload`
+- Type `ZahlungsKanal` = Schema-Enum (`TWINT | UEBERWEISUNG | BAR`)
 - `zahlung.service.ts` — `GET/POST/DELETE /api/zahlungen`
 
 ### Auth (UC-014/015/016)
 
 **Login** (`src/app/auth/`)
-- `auth.service.ts` — Login/Logout, Token in `sessionStorage`, Signals `istAngemeldet`/`rolle`/`email`
+- `auth.service.ts` — Login/Logout, Token in `sessionStorage`, Signals `istAngemeldet`/`rolle`/`email`; `Rolle` und `LoginResponse` aus dem Schema
 - `auth.interceptor.ts` — Bearer-Header + 401-Handling (funktionaler Interceptor)
 - `auth.guard.ts` — `authGuard`, `roleGuard(rolle)` (funktionale Guards)
 - `login.component.*` — Login-Formular unter `/login`
 
 **Benutzerverwaltung** (`src/app/benutzer/`)
-- `benutzer.model.ts` — `Benutzer` (id, email, rolle, partei?), `BenutzerPayload` (inkl. passwort, nur im Request)
+- `benutzer.model.ts` — `Benutzer` (aus Schema ohne write-only `passwort`; `partei?: Partei | null`), `BenutzerPayload` (inkl. passwort, nur im Request)
 - `benutzer.service.ts` — `GET/POST/DELETE /api/benutzer`, `passwortSetzen(id, passwort)` → `PUT /api/benutzer/{id}/passwort`
 - `BenutzerVerwaltungComponent` — Accounts anlegen (E-Mail, Initialpasswort min. 10 Zeichen, Rolle, Partei-Dropdown bei PARTEI), Passwort-Reset (window.prompt), Löschen (window.confirm)
 

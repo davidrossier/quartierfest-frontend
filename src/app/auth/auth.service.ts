@@ -3,12 +3,11 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import type { Benutzer as ApiBenutzer, LoginResponse as ApiLoginResponse } from '../api/schema';
 
-export type Rolle = 'ORGANISATOR' | 'PARTEI';
-
-export interface LoginResponse {
-  token: string;
-}
+/** Rollen und Login-Antwort aus dem OpenAPI-Schema (API-001); `token` liefert das Backend bei 200 immer. */
+export type Rolle = ApiBenutzer['rolle'];
+export type LoginResponse = Required<ApiLoginResponse>;
 
 const TOKEN_KEY = 'quartierfest.token';
 

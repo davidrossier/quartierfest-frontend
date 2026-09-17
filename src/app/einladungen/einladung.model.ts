@@ -1,18 +1,19 @@
-export type EinladungStatus = 'OFFEN' | 'ANGEMELDET' | 'ABGEMELDET';
-export type BuffetBeitrag = 'KEINER' | 'SALAT' | 'BROT_ZOPF' | 'DESSERT' | 'WEITERE';
+import type { Einladung as ApiEinladung } from '../api/schema';
+import { Persisted } from '../api/types';
+import { Event } from '../events/event.model';
+import { Partei } from '../parteien/partei.model';
 
-export interface Einladung {
-  id: number;
-  event: { id: number; datum: string; startzeit: string; standort: string };
-  partei: { id: number; bezeichnung: string; adresse: string };
-  status: EinladungStatus;
-  anzahlPersonen?: number;
-  hilftAufstellen?: boolean;
-  hilftAufraumen?: boolean;
-  buffetBeitrag?: BuffetBeitrag;
-  buffetBeitragBeschreibung?: string;
-  bestaetigungVersendet: boolean;
-}
+export type EinladungStatus = ApiEinladung['status'];
+export type BuffetBeitrag = NonNullable<ApiEinladung['buffetBeitrag']>;
+
+/** Antwort-Typ aus dem OpenAPI-Schema (API-001); `bestaetigungVersendet` ist ein primitiver boolean. */
+export type Einladung = Persisted<
+  Omit<ApiEinladung, 'event' | 'partei'>,
+  'bestaetigungVersendet'
+> & {
+  event: Event;
+  partei: Partei;
+};
 
 export interface EinladungPayload {
   id?: number;

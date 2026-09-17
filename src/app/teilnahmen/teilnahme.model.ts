@@ -1,28 +1,19 @@
-import { BuffetBeitrag } from '../einladungen/einladung.model';
+import type {
+  Teilnahme as ApiTeilnahme,
+  TeilnahmeBuffetBeitrag,
+  TeilnahmeUpdateRequest,
+} from '../api/schema';
+import { Persisted } from '../api/types';
+import { BuffetBeitrag, Einladung } from '../einladungen/einladung.model';
 
-export interface BuffetBeitragEintrag {
-  art: BuffetBeitrag;
-  beschreibung?: string;
-}
+/** Ein Büffetbeitrag der Teilnahme; `art` ist im Backend nicht `@NotNull`, im Frontend aber immer gesetzt. */
+export type BuffetBeitragEintrag = Omit<TeilnahmeBuffetBeitrag, 'art'> & { art: BuffetBeitrag };
 
-export interface Teilnahme {
-  id: number;
-  einladung: {
-    id: number;
-    event: { id: number; datum: string; standort: string };
-    partei: { id: number; bezeichnung: string };
-    status: string;
-    anzahlPersonen?: number;
-    hilftAufstellen?: boolean;
-    hilftAufraumen?: boolean;
-    buffetBeitrag?: BuffetBeitrag;
-    buffetBeitragBeschreibung?: string;
-  };
-  anzahlPersonenEffektiv?: number;
-  hilftAufstellen?: boolean;
-  hilftAufraumen?: boolean;
+/** Antwort-Typ aus dem OpenAPI-Schema (API-001); `buffetBeitraege` ist im Backend immer initialisiert. */
+export type Teilnahme = Persisted<Omit<ApiTeilnahme, 'einladung' | 'buffetBeitraege'>> & {
+  einladung: Einladung;
   buffetBeitraege: BuffetBeitragEintrag[];
-}
+};
 
 export interface TeilnahmePayload {
   einladung: { id: number };
@@ -32,10 +23,7 @@ export interface TeilnahmePayload {
   buffetBeitraege: BuffetBeitragEintrag[];
 }
 
-/** UC-016: PUT /api/teilnahmen/{id} — Whitelist ohne einladung. */
-export interface TeilnahmeUpdatePayload {
-  anzahlPersonenEffektiv?: number;
-  hilftAufstellen?: boolean;
-  hilftAufraumen?: boolean;
+/** UC-016: PUT /api/teilnahmen/{id} — Whitelist ohne einladung (Schema `TeilnahmeUpdateRequest`). */
+export type TeilnahmeUpdatePayload = Omit<TeilnahmeUpdateRequest, 'buffetBeitraege'> & {
   buffetBeitraege: BuffetBeitragEintrag[];
-}
+};

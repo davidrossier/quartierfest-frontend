@@ -1,0 +1,2 @@
+# API-001: generiertes OpenAPI-Schema (npm run api:generate) – nicht formatieren
+src/app/api/schema.d.ts
