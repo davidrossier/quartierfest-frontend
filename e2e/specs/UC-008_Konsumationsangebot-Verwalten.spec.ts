@@ -7,6 +7,7 @@
  * Abgedeckte Szenarien:
  *  - [HAPPY]  Angebotseintrag erfolgreich erfassen
  *  - [HAPPY]  Angebotseintrag löschen
+ *  - [HAPPY]  Angebotseintrag bearbeiten — aktualisiert denselben Datensatz (PUT, REST-003)
  *  - [ERROR]  Angebotseintrag ohne Preis speichern schlägt fehl
  *  - [ERROR]  Angebotseintrag ohne Bezeichnung speichern schlägt fehl
  *  - [ERROR]  Angebotseintrag mit bestehenden Konsumationen löschen schlägt fehl
@@ -73,6 +74,33 @@ test.describe('UC-008 — Konsumationsangebot verwalten', () => {
         angebotePage.tabelle.getByRole('row').filter({ hasText: 'Delete-Bier-E2E' }),
       ).toHaveCount(0);
 
+      await deleteTestEvent(event.id);
+    });
+    test('Angebotseintrag bearbeiten — aktualisiert denselben Datensatz (PUT, REST-003)', async ({ page }) => {
+      angebotePage = new KonsumationsangebotePage(page);
+
+      const event = await createTestEvent({ standort: 'Edit-Angebot-E2E' });
+      const angebot = await createTestKonsumationsangebot({
+        eventId: event.id,
+        bezeichnung: 'Edit-Bier-E2E',
+        preis: 3.5,
+      });
+
+      await angebotePage.goto(event.id);
+      await angebotePage.bearbeiten('Edit-Bier-E2E');
+      await angebotePage.inputPreis.fill('4');
+      await angebotePage.speichern();
+
+      await expect(angebotePage.erfolgsMeldung).toContainText('aktualisiert');
+      const angebote: TestKonsumationsangebot[] = await fetch('http://localhost:8080/api/konsumationsangebote').then(
+        (r) => r.json(),
+      );
+      const treffer = angebote.filter((x) => x.bezeichnung === 'Edit-Bier-E2E');
+      expect(treffer).toHaveLength(1);
+      expect(treffer[0].id).toBe(angebot.id);
+      expect(treffer[0].preis).toBe(4);
+
+      await deleteTestKonsumationsangebot(angebot.id);
       await deleteTestEvent(event.id);
     });
   });

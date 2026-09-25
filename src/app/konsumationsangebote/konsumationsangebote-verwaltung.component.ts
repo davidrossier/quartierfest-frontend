@@ -4,7 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { KonsumationsangebotService } from './konsumationsangebot.service';
 import { EventKontextService } from '../event-kontext/event-kontext.service';
-import { Konsumationsangebot } from './konsumationsangebot.model';
+import { Konsumationsangebot, KonsumationsangebotPayload } from './konsumationsangebot.model';
 
 @Component({
   selector: 'app-konsumationsangebote-verwaltung',
@@ -88,28 +88,31 @@ export class KonsumationsangeboteVerwaltungComponent implements OnInit {
     const { bezeichnung, preis } = this.erfassenForm.value;
     const editAngebot = this.bearbeitungAngebot();
 
-    this.angebotService
-      .save({
-        id: editAngebot?.id,
-        event: { id: eventId },
-        bezeichnung: bezeichnung!,
-        preis: Number(preis),
-      })
-      .subscribe({
-        next: () => {
-          const meldung = editAngebot
-            ? `„${bezeichnung}" wurde aktualisiert.`
-            : `„${bezeichnung}" wurde erfasst.`;
-          this.bearbeitungAngebot.set(null);
-          this.erfassenForm.reset();
-          this.erfolg.set(meldung);
-          this.laden();
-          setTimeout(() => this.erfolg.set(null), 3000);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.formFehler.set(err.error?.message ?? 'Angebot konnte nicht gespeichert werden.');
-        },
-      });
+    const payload: KonsumationsangebotPayload = {
+      eventId,
+      bezeichnung: bezeichnung!,
+      preis: Number(preis),
+    };
+    // REST-003 (erweitert): Bearbeiten per PUT, Erfassen per POST
+    const anfrage = editAngebot
+      ? this.angebotService.update(editAngebot.id, payload)
+      : this.angebotService.save(payload);
+
+    anfrage.subscribe({
+      next: () => {
+        const meldung = editAngebot
+          ? `„${bezeichnung}" wurde aktualisiert.`
+          : `„${bezeichnung}" wurde erfasst.`;
+        this.bearbeitungAngebot.set(null);
+        this.erfassenForm.reset();
+        this.erfolg.set(meldung);
+        this.laden();
+        setTimeout(() => this.erfolg.set(null), 3000);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.formFehler.set(err.error?.message ?? 'Angebot konnte nicht gespeichert werden.');
+      },
+    });
   }
 
   loeschen(angebot: Konsumationsangebot): void {

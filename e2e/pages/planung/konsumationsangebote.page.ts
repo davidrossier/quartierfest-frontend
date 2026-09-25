@@ -58,6 +58,12 @@ export class KonsumationsangebotePage {
     await expect(this.tabelle.getByRole('row').filter({ hasText: bezeichnung })).toBeVisible();
   }
 
+  /** Öffnet einen bestehenden Eintrag im Formular (Bearbeiten → PUT, REST-003). */
+  async bearbeiten(bezeichnung: string) {
+    const zeile = this.tabelle.getByRole('row').filter({ hasText: bezeichnung });
+    await zeile.getByRole('button', { name: 'Bearbeiten' }).click();
+  }
+
   async loeschen(bezeichnung: string) {
     const zeile = this.tabelle.getByRole('row').filter({ hasText: bezeichnung });
     this.page.once('dialog', (d) => d.accept());

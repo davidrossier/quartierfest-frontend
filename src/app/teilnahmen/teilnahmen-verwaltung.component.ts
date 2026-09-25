@@ -104,7 +104,7 @@ export class TeilnahmenVerwaltungComponent implements OnInit {
           buffetBeitraege.push({ art: e.buffetBeitrag, beschreibung: e.buffetBeitragBeschreibung ?? undefined });
         }
         return this.teilnahmeService.save({
-          einladung: { id: e.id },
+          einladungId: e.id,
           anzahlPersonenEffektiv: e.anzahlPersonen,
           hilftAufstellen: e.hilftAufstellen,
           hilftAufraumen: e.hilftAufraumen,

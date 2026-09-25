@@ -17,6 +17,11 @@ export class AllgemeinausgabeService {
     return this.http.post<Allgemeinausgabe>(this.baseUrl, payload);
   }
 
+  /** UC-007: Ausgabe bearbeiten (REST-003, erweitert). */
+  update(id: number, payload: AllgemeinausgabePayload): Observable<Allgemeinausgabe> {
+    return this.http.put<Allgemeinausgabe>(`${this.baseUrl}/${id}`, payload);
+  }
+
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }

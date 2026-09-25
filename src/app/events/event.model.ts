@@ -1,14 +1,5 @@
-import type { Event as ApiEvent } from '../api/schema';
-import { Persisted } from '../api/types';
+import type { EventRequest, EventResponse } from '../api/schema';
 
-/** Antwort-Typ aus dem OpenAPI-Schema (API-001). */
-export type Event = Persisted<ApiEvent>;
-
-export interface EventPayload {
-  datum: string;
-  startzeit: string;
-  standort: string;
-  alternativerStandort?: string;
-  zeitAufstellen?: string;
-  zeitAufraumen?: string;
-}
+/** UC-003: Contract-Typen aus dem OpenAPI-Schema (API-001 Stufe 2). */
+export type Event = EventResponse;
+export type EventPayload = EventRequest;

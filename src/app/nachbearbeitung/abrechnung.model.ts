@@ -1,20 +1,12 @@
-import type { Abrechnung as ApiAbrechnung } from '../api/schema';
-import { Persisted } from '../api/types';
-import { Teilnahme } from '../teilnahmen/teilnahme.model';
+import type {
+  AbrechnungRequest,
+  AbrechnungResponse,
+  AbrechnungUpdateRequest,
+  Zustellungskanal,
+} from '../api/schema';
 
-export type ZustellungsKanal = ApiAbrechnung['zustellungskanal'];
-
-/** Antwort-Typ aus dem OpenAPI-Schema (API-001). */
-export type Abrechnung = Persisted<Omit<ApiAbrechnung, 'teilnahme'>> & {
-  teilnahme: Teilnahme;
-};
-
-export interface AbrechnungPayload {
-  id?: number;
-  teilnahme: { id: number };
-  anteilAllgemeinkosten: number;
-  totalKonsumation: number;
-  totalBetrag: number;
-  zustellungskanal: ZustellungsKanal;
-  zustellungsDatum?: string;
-}
+/** UC-011/UC-012: Contract-Typen aus dem OpenAPI-Schema (API-001 Stufe 2); Änderungen per PUT (REST-003). */
+export type ZustellungsKanal = Zustellungskanal;
+export type Abrechnung = AbrechnungResponse;
+export type AbrechnungPayload = AbrechnungRequest;
+export type AbrechnungUpdatePayload = AbrechnungUpdateRequest;

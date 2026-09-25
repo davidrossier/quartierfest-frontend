@@ -9,95 +9,44 @@
 const BASE_URL = 'http://localhost:8080';
 
 // ================================================================
-// Typen
+// Typen — aus dem generierten API-Contract (API-001 Stufe 2)
 // ================================================================
 
-export interface TestPerson {
-  id: number;
-  vorname: string;
-  name: string;
-  telefonnummer?: string;
-  mobilenummer?: string;
-  email?: string;
-}
+import type {
+  AbrechnungRequest,
+  AbrechnungResponse,
+  AllgemeinausgabeRequest,
+  AllgemeinausgabeResponse,
+  BenutzerRequest,
+  BenutzerResponse,
+  EinladungRequest,
+  EinladungResponse,
+  EventResponse,
+  KonsumationRequest,
+  KonsumationResponse,
+  KonsumationsangebotRequest,
+  KonsumationsangebotResponse,
+  MahnungRequest,
+  MahnungResponse,
+  ParteiResponse,
+  PersonResponse,
+  TeilnahmeRequest,
+  TeilnahmeResponse,
+  ZahlungRequest,
+  ZahlungResponse,
+} from '../../src/app/api/schema';
 
-export interface TestPartei {
-  id: number;
-  bezeichnung: string;
-  adresse: string;
-  twintAktiv: boolean;
-  twintMobilenummer?: string;
-  personen: TestPerson[];
-}
-
-export interface TestEvent {
-  id: number;
-  datum: string;
-  startzeit: string;
-  standort: string;
-  alternativerStandort?: string;
-}
-
-export interface TestEinladung {
-  id: number;
-  event: { id: number };
-  partei: { id: number; bezeichnung: string };
-  status: 'OFFEN' | 'ANGEMELDET' | 'ABGEMELDET';
-  anzahlPersonen?: number;
-  bestaetigungVersendet: boolean;
-}
-
-export interface TestTeilnahme {
-  id: number;
-  einladung: { id: number; partei: { id: number; bezeichnung: string }; event: { id: number } };
-  anzahlPersonenEffektiv?: number;
-  buffetBeitraege: Array<{ art: string; beschreibung?: string }>;
-}
-
-export interface TestKonsumationsangebot {
-  id: number;
-  bezeichnung: string;
-  preis: number;
-}
-
-export interface TestAllgemeinausgabe {
-  id: number;
-  beschreibung: string;
-  betrag: number;
-  herkunft?: string;
-}
-
-export interface TestKonsumation {
-  id: number;
-  teilnahme: { id: number };
-  konsumationsangebot: { id: number };
-  anzahl: number;
-}
-
-export interface TestAbrechnung {
-  id: number;
-  teilnahme: { id: number; einladung: { partei: { bezeichnung: string } } };
-  anteilAllgemeinkosten: number;
-  totalKonsumation: number;
-  totalBetrag: number;
-  zustellungskanal: 'TWINT' | 'EMAIL' | 'PAPIER';
-  zustellungsDatum?: string;
-}
-
-export interface TestZahlung {
-  id: number;
-  abrechnung: { id: number };
-  zahlungskanal: 'TWINT' | 'UEBERWEISUNG' | 'BAR';
-  datum: string;
-  betrag: number;
-}
-
-export interface TestMahnung {
-  id: number;
-  abrechnung: { id: number };
-  datum: string;
-  bemerkung?: string;
-}
+export type TestPerson = PersonResponse;
+export type TestPartei = ParteiResponse;
+export type TestEvent = EventResponse;
+export type TestEinladung = EinladungResponse;
+export type TestTeilnahme = TeilnahmeResponse;
+export type TestKonsumationsangebot = KonsumationsangebotResponse;
+export type TestAllgemeinausgabe = AllgemeinausgabeResponse;
+export type TestKonsumation = KonsumationResponse;
+export type TestAbrechnung = AbrechnungResponse;
+export type TestZahlung = ZahlungResponse;
+export type TestMahnung = MahnungResponse;
 
 // ================================================================
 // Personen
@@ -192,15 +141,15 @@ export async function createTestEinladung(daten: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      event: { id: daten.eventId },
-      partei: { id: daten.parteiId },
+      eventId: daten.eventId,
+      parteiId: daten.parteiId,
       status: daten.status ?? 'OFFEN',
       anzahlPersonen: daten.anzahlPersonen,
       hilftAufstellen: daten.hilftAufstellen,
       hilftAufraumen: daten.hilftAufraumen,
       buffetBeitrag: daten.buffetBeitrag ?? 'KEINER',
       bestaetigungVersendet: false,
-    }),
+    } satisfies EinladungRequest),
   });
   if (!response.ok) throw new Error(`Einladung erstellen fehlgeschlagen: ${response.status}`);
   return response.json();
@@ -222,10 +171,10 @@ export async function createTestTeilnahme(daten: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      einladung: { id: daten.einladungId },
+      einladungId: daten.einladungId,
       anzahlPersonenEffektiv: daten.anzahlPersonenEffektiv ?? 2,
       buffetBeitraege: [],
-    }),
+    } satisfies TeilnahmeRequest),
   });
   if (!response.ok) throw new Error(`Teilnahme erstellen fehlgeschlagen: ${response.status}`);
   return response.json();
@@ -248,10 +197,10 @@ export async function createTestKonsumationsangebot(daten: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      event: { id: daten.eventId },
+      eventId: daten.eventId,
       bezeichnung: daten.bezeichnung ?? `Testgetränk-${Date.now()}`,
       preis: daten.preis ?? 3.5,
-    }),
+    } satisfies KonsumationsangebotRequest),
   });
   if (!response.ok)
     throw new Error(`Konsumationsangebot erstellen fehlgeschlagen: ${response.status}`);
@@ -276,11 +225,11 @@ export async function createTestAllgemeinausgabe(daten: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      event: { id: daten.eventId },
+      eventId: daten.eventId,
       beschreibung: daten.beschreibung ?? 'Testausgabe',
       betrag: daten.betrag ?? 100,
       herkunft: daten.herkunft,
-    }),
+    } satisfies AllgemeinausgabeRequest),
   });
   if (!response.ok)
     throw new Error(`Allgemeinausgabe erstellen fehlgeschlagen: ${response.status}`);
@@ -304,10 +253,10 @@ export async function createTestKonsumation(daten: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      teilnahme: { id: daten.teilnahmeId },
-      konsumationsangebot: { id: daten.konsumationsangebotId },
+      teilnahmeId: daten.teilnahmeId,
+      konsumationsangebotId: daten.konsumationsangebotId,
       anzahl: daten.anzahl,
-    }),
+    } satisfies KonsumationRequest),
   });
   if (!response.ok) throw new Error(`Konsumation erstellen fehlgeschlagen: ${response.status}`);
   return response.json();
@@ -332,12 +281,12 @@ export async function createTestAbrechnung(daten: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      teilnahme: { id: daten.teilnahmeId },
+      teilnahmeId: daten.teilnahmeId,
       anteilAllgemeinkosten: daten.anteilAllgemeinkosten,
       totalKonsumation: daten.totalKonsumation,
       totalBetrag: daten.totalBetrag,
       zustellungskanal: daten.zustellungskanal ?? 'EMAIL',
-    }),
+    } satisfies AbrechnungRequest),
   });
   if (!response.ok) throw new Error(`Abrechnung erstellen fehlgeschlagen: ${response.status}`);
   return response.json();
@@ -361,11 +310,11 @@ export async function createTestZahlung(daten: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      abrechnung: { id: daten.abrechnungId },
+      abrechnungId: daten.abrechnungId,
       zahlungskanal: daten.zahlungskanal ?? 'TWINT',
       datum: daten.datum ?? new Date().toISOString().substring(0, 10),
       betrag: daten.betrag,
-    }),
+    } satisfies ZahlungRequest),
   });
   if (!response.ok) throw new Error(`Zahlung erstellen fehlgeschlagen: ${response.status}`);
   return response.json();
@@ -388,10 +337,10 @@ export async function createTestMahnung(daten: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      abrechnung: { id: daten.abrechnungId },
+      abrechnungId: daten.abrechnungId,
       datum: daten.datum ?? new Date().toISOString().substring(0, 10),
       bemerkung: daten.bemerkung,
-    }),
+    } satisfies MahnungRequest),
   });
   if (!response.ok) throw new Error(`Mahnung erstellen fehlgeschlagen: ${response.status}`);
   return response.json();
@@ -412,12 +361,7 @@ export const ORGANISATOR_PASSWORT = 'quartierfest-admin';
 /** sessionStorage-Schlüssel des Frontends (auth.service.ts). */
 export const TOKEN_KEY = 'quartierfest.token';
 
-export interface TestBenutzer {
-  id: number;
-  email: string;
-  rolle: 'ORGANISATOR' | 'PARTEI';
-  partei?: { id: number } | null;
-}
+export type TestBenutzer = BenutzerResponse;
 
 export async function login(email: string, passwort: string): Promise<string> {
   const response = await fetch(`${BASE_URL}/api/auth/login`, {
@@ -453,8 +397,8 @@ export async function createTestBenutzer(daten: {
       email: daten.email,
       passwort: daten.passwort,
       rolle: daten.rolle,
-      partei: daten.parteiId ? { id: daten.parteiId } : null,
-    }),
+      parteiId: daten.parteiId,
+    } satisfies BenutzerRequest),
   });
   if (!response.ok) throw new Error(`Benutzer erstellen fehlgeschlagen: ${response.status}`);
   return response.json();

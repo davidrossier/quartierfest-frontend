@@ -1,17 +1,6 @@
-import type { Zahlung as ApiZahlung } from '../api/schema';
-import { Persisted } from '../api/types';
-import { Abrechnung } from './abrechnung.model';
+import type { Zahlungskanal, ZahlungRequest, ZahlungResponse } from '../api/schema';
 
-export type ZahlungsKanal = ApiZahlung['zahlungskanal'];
-
-/** Antwort-Typ aus dem OpenAPI-Schema (API-001). */
-export type Zahlung = Persisted<Omit<ApiZahlung, 'abrechnung'>> & {
-  abrechnung: Abrechnung;
-};
-
-export interface ZahlungPayload {
-  abrechnung: { id: number };
-  zahlungskanal: ZahlungsKanal;
-  datum: string;
-  betrag: number;
-}
+/** UC-013: Contract-Typen aus dem OpenAPI-Schema (API-001 Stufe 2). */
+export type ZahlungsKanal = Zahlungskanal;
+export type Zahlung = ZahlungResponse;
+export type ZahlungPayload = ZahlungRequest;

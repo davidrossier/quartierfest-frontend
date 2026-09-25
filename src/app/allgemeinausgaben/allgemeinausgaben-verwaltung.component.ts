@@ -4,7 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { createSortierung, sortiereItems } from '../shared/sortierung';
 import { AllgemeinausgabeService } from './allgemeinausgabe.service';
 import { EventKontextService } from '../event-kontext/event-kontext.service';
-import { Allgemeinausgabe } from './allgemeinausgabe.model';
+import { Allgemeinausgabe, AllgemeinausgabePayload } from './allgemeinausgabe.model';
 
 @Component({
   selector: 'app-allgemeinausgaben-verwaltung',
@@ -98,29 +98,32 @@ export class AllgemeinausgabenVerwaltungComponent implements OnInit {
     const { beschreibung, herkunft, betrag } = this.erfassenForm.value;
     const editAusgabe = this.bearbeitungAusgabe();
 
-    this.ausgabeService
-      .save({
-        id: editAusgabe?.id,
-        event: { id: eventId },
-        beschreibung: beschreibung!,
-        herkunft: herkunft || undefined,
-        betrag: Number(betrag),
-      })
-      .subscribe({
-        next: () => {
-          const meldung = editAusgabe
-            ? `„${beschreibung}" wurde aktualisiert.`
-            : `„${beschreibung}" wurde erfasst.`;
-          this.bearbeitungAusgabe.set(null);
-          this.erfassenForm.reset();
-          this.erfolg.set(meldung);
-          this.laden();
-          setTimeout(() => this.erfolg.set(null), 3000);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.formFehler.set(err.error?.message ?? 'Ausgabe konnte nicht gespeichert werden.');
-        },
-      });
+    const payload: AllgemeinausgabePayload = {
+      eventId,
+      beschreibung: beschreibung!,
+      herkunft: herkunft || undefined,
+      betrag: Number(betrag),
+    };
+    // REST-003 (erweitert): Bearbeiten per PUT, Erfassen per POST
+    const anfrage = editAusgabe
+      ? this.ausgabeService.update(editAusgabe.id, payload)
+      : this.ausgabeService.save(payload);
+
+    anfrage.subscribe({
+      next: () => {
+        const meldung = editAusgabe
+          ? `„${beschreibung}" wurde aktualisiert.`
+          : `„${beschreibung}" wurde erfasst.`;
+        this.bearbeitungAusgabe.set(null);
+        this.erfassenForm.reset();
+        this.erfolg.set(meldung);
+        this.laden();
+        setTimeout(() => this.erfolg.set(null), 3000);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.formFehler.set(err.error?.message ?? 'Ausgabe konnte nicht gespeichert werden.');
+      },
+    });
   }
 
   loeschen(ausgabe: Allgemeinausgabe): void {

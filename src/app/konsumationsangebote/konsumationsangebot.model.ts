@@ -1,15 +1,5 @@
-import type { Konsumationsangebot as ApiKonsumationsangebot } from '../api/schema';
-import { Persisted } from '../api/types';
-import { Event } from '../events/event.model';
+import type { KonsumationsangebotRequest, KonsumationsangebotResponse } from '../api/schema';
 
-/** Antwort-Typ aus dem OpenAPI-Schema (API-001). */
-export type Konsumationsangebot = Persisted<Omit<ApiKonsumationsangebot, 'event'>> & {
-  event: Event;
-};
-
-export interface KonsumationsangebotPayload {
-  id?: number;
-  event: { id: number };
-  bezeichnung: string;
-  preis: number;
-}
+/** UC-008: Contract-Typen aus dem OpenAPI-Schema (API-001 Stufe 2); derselbe Payload für POST und PUT. */
+export type Konsumationsangebot = KonsumationsangebotResponse;
+export type KonsumationsangebotPayload = KonsumationsangebotRequest;

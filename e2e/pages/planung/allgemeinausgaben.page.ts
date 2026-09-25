@@ -71,6 +71,12 @@ export class AllgemeinausgabenPage {
     await expect(this.page.locator('.gesamt-zeile')).toContainText(betragText);
   }
 
+  /** Öffnet einen bestehenden Eintrag im Formular (Bearbeiten → PUT, REST-003). */
+  async bearbeiten(beschreibung: string) {
+    const zeile = this.tabelle.getByRole('row').filter({ hasText: beschreibung });
+    await zeile.getByRole('button', { name: 'Bearbeiten' }).click();
+  }
+
   async loeschen(beschreibung: string) {
     const zeile = this.tabelle.getByRole('row').filter({ hasText: beschreibung });
     this.page.once('dialog', (d) => d.accept());

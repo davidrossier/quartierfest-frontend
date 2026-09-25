@@ -17,6 +17,11 @@ export class KonsumationsangebotService {
     return this.http.post<Konsumationsangebot>(this.baseUrl, payload);
   }
 
+  /** UC-008: Angebot bearbeiten (REST-003, erweitert). */
+  update(id: number, payload: KonsumationsangebotPayload): Observable<Konsumationsangebot> {
+    return this.http.put<Konsumationsangebot>(`${this.baseUrl}/${id}`, payload);
+  }
+
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }

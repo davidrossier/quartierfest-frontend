@@ -1,19 +1,9 @@
-import type { Partei as ApiPartei } from '../api/schema';
-import { Persisted } from '../api/types';
-import { Person } from '../personen/person.model';
+import type { ParteiKurz as ApiParteiKurz, ParteiRequest, ParteiResponse } from '../api/schema';
 
 /**
- * Antwort-Typ aus dem OpenAPI-Schema (API-001). `personenIds` ist write-only (nur im Payload),
- * `personen` liefert das Backend immer als Liste, `twintAktiv` ist ein primitiver boolean.
+ * UC-002: Contract-Typen aus dem OpenAPI-Schema (API-001 Stufe 2). `Partei` enthält die Personen und
+ * kommt nur von /api/parteien; in Einladung, Teilnahme, Abrechnung und Benutzer steckt `ParteiKurz` ohne Personen.
  */
-export type Partei = Persisted<Omit<ApiPartei, 'personen' | 'personenIds'>, 'twintAktiv'> & {
-  personen: Person[];
-};
-
-export interface ParteiPayload {
-  bezeichnung: string;
-  adresse: string;
-  twintAktiv: boolean;
-  twintMobilenummer?: string;
-  personenIds: number[];
-}
+export type Partei = ParteiResponse;
+export type ParteiKurz = ApiParteiKurz;
+export type ParteiPayload = ParteiRequest;

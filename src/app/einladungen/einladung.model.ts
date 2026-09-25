@@ -1,29 +1,19 @@
-import type { Einladung as ApiEinladung } from '../api/schema';
-import { Persisted } from '../api/types';
-import { Event } from '../events/event.model';
-import { Partei } from '../parteien/partei.model';
+import type {
+  BuffetBeitrag as ApiBuffetBeitrag,
+  EinladungKurz as ApiEinladungKurz,
+  EinladungRequest,
+  EinladungResponse,
+  EinladungStatus as ApiEinladungStatus,
+  EinladungUpdateRequest,
+} from '../api/schema';
 
-export type EinladungStatus = ApiEinladung['status'];
-export type BuffetBeitrag = NonNullable<ApiEinladung['buffetBeitrag']>;
-
-/** Antwort-Typ aus dem OpenAPI-Schema (API-001); `bestaetigungVersendet` ist ein primitiver boolean. */
-export type Einladung = Persisted<
-  Omit<ApiEinladung, 'event' | 'partei'>,
-  'bestaetigungVersendet'
-> & {
-  event: Event;
-  partei: Partei;
-};
-
-export interface EinladungPayload {
-  id?: number;
-  event: { id: number };
-  partei: { id: number };
-  status: EinladungStatus;
-  anzahlPersonen?: number;
-  hilftAufstellen?: boolean;
-  hilftAufraumen?: boolean;
-  buffetBeitrag?: BuffetBeitrag;
-  buffetBeitragBeschreibung?: string;
-  bestaetigungVersendet: boolean;
-}
+/**
+ * UC-004/UC-006: Contract-Typen aus dem OpenAPI-Schema (API-001 Stufe 2).
+ * Bestehende Einladungen werden per PUT mit `EinladungUpdatePayload` geändert (REST-003).
+ */
+export type EinladungStatus = ApiEinladungStatus;
+export type BuffetBeitrag = ApiBuffetBeitrag;
+export type Einladung = EinladungResponse;
+export type EinladungKurz = ApiEinladungKurz;
+export type EinladungPayload = EinladungRequest;
+export type EinladungUpdatePayload = EinladungUpdateRequest;
