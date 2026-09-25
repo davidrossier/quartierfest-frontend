@@ -1,13 +1,5 @@
-import type { Person as ApiPerson } from '../api/schema';
-import { Persisted } from '../api/types';
+import type { PersonRequest, PersonResponse } from '../api/schema';
 
-/** Antwort-Typ aus dem OpenAPI-Schema (API-001). */
-export type Person = Persisted<ApiPerson>;
-
-export interface PersonPayload {
-  vorname: string;
-  name: string;
-  telefonnummer?: string;
-  mobilenummer?: string;
-  email?: string;
-}
+/** UC-001: Contract-Typen aus dem OpenAPI-Schema (API-001 Stufe 2). */
+export type Person = PersonResponse;
+export type PersonPayload = PersonRequest;

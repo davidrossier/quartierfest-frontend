@@ -32,7 +32,7 @@ Angular 21 standalone application — no NgModules. Every component uses the sta
 - `src/app/app.ts` — Root component with `<router-outlet>`
 - `src/app/shared/sortierung.ts` — Shared table sorting utilities
 
-**API-Contract (API-001):** `src/app/api/schema.d.ts` ist aus `../quartierfest-backend/specs/openapi.json` generiert (`npm run api:generate`, openapi-typescript mit `--root-types`) und eingecheckt — nie von Hand editieren, steht in `.prettierignore`. Alle `*.model.ts` leiten ihre Antwort-Typen daraus ab: `Persisted<T, K>` (`src/app/api/types.ts`) setzt `id: number` und macht die Felder `K` Pflicht, die das Backend immer liefert, im Entity-Schema aber optional sind (primitive `boolean`, initialisierte Collections). Verschachtelte Referenzen werden pro Modell auf den jeweiligen Modell-Typ umgebogen (`Omit<ApiEinladung, 'event' | 'partei'> & { event: Event; partei: Partei }`). Die `*Payload`-Typen bleiben handgeschrieben (Entity = Request- und Response-Schema, `{ id }`-Referenzen sind dort nicht ausdrückbar) — bis API-001 Stufe 2 (DTOs). Bei Contract-Änderung: Backend-PR zuerst mergen, dann `npm run api:generate`, Typfehler beheben, `schema.d.ts` mitcommitten.
+**API-Contract (API-001):** `src/app/api/schema.d.ts` ist aus `../quartierfest-backend/specs/openapi.json` generiert (`npm run api:generate`, openapi-typescript mit `--root-types`) und eingecheckt — nie von Hand editieren, steht in `.prettierignore`. Seit Stufe 2 (DTO-Layer im Backend) sind alle `*.model.ts` reine Aliase auf die generierten Typen: `Xxx = XxxResponse`, `XxxPayload = XxxRequest`, `XxxUpdatePayload = XxxUpdateRequest`; es gibt keine handgeschriebenen Contract-Typen mehr. Referenzen in Requests sind flache IDs (`eventId`, `parteiId`, `teilnahmeId`, …). In Antworten stecken Referenzen als Kurz-Typen ohne Collections (`ParteiKurz` ohne `personen`, `EinladungKurz`, `TeilnahmeKurz`, `AbrechnungKurz`); die Pfade `teilnahme.einladung.event.id` usw. bleiben gültig. `null`-Felder lässt das Backend weg (optional im Typ). Bestehende Datensätze werden immer per `update(id, payload)` → `PUT` geändert; ein POST mit `id` scheitert mit 400 «Unbekanntes Feld: id». Bei Contract-Änderung: Backend-PR zuerst mergen, dann `npm run api:generate`, Typfehler beheben, `schema.d.ts` mitcommitten. Die E2E-Hilfen (`e2e/helpers/api-helpers.ts`) nutzen dieselben Typen (`satisfies XxxRequest`), werden aber in keiner CI-Stufe typgeprüft.
 
 **State management:** Angular Signals (`signal`, `computed`) for local/shared state; RxJS Observables for HTTP calls.
 
@@ -95,17 +95,17 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 ### Stammdaten
 
 **Personenverwaltung** (`src/app/personen/`)
-- `person.model.ts` — `Person` (aus Schema, API-001), `PersonPayload`
+- `person.model.ts` — `Person`, `PersonPayload` (Schema-Aliase)
 - `person.service.ts` — `GET/POST/PUT/DELETE /api/persons`
 - Route `/personen`
 
 **Parteiverwaltung** (`src/app/parteien/`)
-- `partei.model.ts` — `Partei` (aus Schema; `personen: Person[]` und `twintAktiv` als Pflicht), `ParteiPayload` (personenIds: number[])
+- `partei.model.ts` — `Partei` (mit `personen`), `ParteiKurz` (Referenz ohne Personen), `ParteiPayload` (`personenIds`)
 - `partei.service.ts` — `GET/POST/PUT/DELETE /api/parteien`
 - Route `/parteien`
 
 **Eventverwaltung** (`src/app/events/`)
-- `event.model.ts` — `Event` (aus Schema), `EventPayload`
+- `event.model.ts` — `Event`, `EventPayload` (Schema-Aliase)
 - `event.service.ts` — `GET/POST/PUT/DELETE /api/events`
 - Route `/events`
 
@@ -122,27 +122,27 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 ### Planung
 
 **Einladungsverwaltung** (`src/app/einladungen/`)
-- `einladung.model.ts` — `Einladung` (aus Schema; `event: Event`, `partei: Partei`, `bestaetigungVersendet` Pflicht), `EinladungPayload`
+- `einladung.model.ts` — `Einladung` (`event: Event`, `partei: ParteiKurz`), `EinladungKurz`, `EinladungPayload`, `EinladungUpdatePayload` (Whitelist ohne Event/Partei)
 - Types `EinladungStatus`, `BuffetBeitrag` = Schema-Enums (`OFFEN | ANGEMELDET | ABGEMELDET`, `KEINER | SALAT | BROT_ZOPF | DESSERT | WEITERE`)
-- `einladung.service.ts` — `GET/POST/DELETE /api/einladungen`
+- `einladung.service.ts` — `GET/POST/DELETE /api/einladungen`, `update(id, dto)` → `PUT` (Rückmeldung UC-004, Bestätigung UC-006; REST-003)
 - Bulk-Erstellung für alle Parteien, Status- und Büffetbeitrags-Verwaltung
 
 **Teilnahmeverwaltung** (`src/app/teilnahmen/`)
-- `teilnahme.model.ts` — `Teilnahme` (aus Schema; `einladung: Einladung`, `buffetBeitraege: BuffetBeitragEintrag[]` Pflicht), `TeilnahmePayload`, `TeilnahmeUpdatePayload` (Schema `TeilnahmeUpdateRequest`, UC-016-Whitelist ohne einladung)
+- `teilnahme.model.ts` — `Teilnahme` (`einladung: EinladungKurz`), `TeilnahmeKurz`, `TeilnahmePayload` (`einladungId`), `TeilnahmeUpdatePayload` (UC-016-Whitelist ohne Einladung)
 - `teilnahme.service.ts` — `GET/POST/DELETE /api/teilnahmen`, `getMeine()` (UC-016), `update(id, dto)` (UC-005/UC-016 — alle Bearbeitungen laufen über den Whitelist-PUT; POST mit `id` lehnt das Backend mit 400 ab, REST-001)
 - FormArray für mehrere Büffetbeiträge
 
 **Konsumationsangebote** (`src/app/konsumationsangebote/`)
-- `konsumationsangebot.model.ts` — `Konsumationsangebot` (aus Schema; `event: Event`), `KonsumationsangebotPayload`
-- `konsumationsangebot.service.ts` — `GET/POST/DELETE /api/konsumationsangebote`
+- `konsumationsangebot.model.ts` — `Konsumationsangebot` (`event: Event`), `KonsumationsangebotPayload` (POST und PUT)
+- `konsumationsangebot.service.ts` — `GET/POST/DELETE /api/konsumationsangebote`, `update(id, dto)` → `PUT`
 
 **Bestätigungsübersicht** (`src/app/bestaetigung/`)
 - Zeigt Einladungen mit Status ANGEMELDET, aggregiert Büffetbeiträge
 - Markieren als "Bestätigung versendet"
 
 **Allgemeinausgaben** (`src/app/allgemeinausgaben/`)
-- `allgemeinausgabe.model.ts` — `Allgemeinausgabe` (aus Schema; `event: Event`), `AllgemeinausgabePayload`
-- `allgemeinausgabe.service.ts` — `GET/POST/DELETE /api/allgemeinausgaben`
+- `allgemeinausgabe.model.ts` — `Allgemeinausgabe` (`event: Event`), `AllgemeinausgabePayload` (POST und PUT)
+- `allgemeinausgabe.service.ts` — `GET/POST/DELETE /api/allgemeinausgaben`, `update(id, dto)` → `PUT`
 
 ### Durchführung
 
@@ -151,22 +151,22 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 - Nutzt TeilnahmeService und KonsumationsangebotService
 
 **Konsumationsverwaltung** (`src/app/konsumationen/`)
-- `konsumation.model.ts` — `Konsumation` (aus Schema; `teilnahme: Teilnahme`, `konsumationsangebot: Konsumationsangebot`), `KonsumationPayload`
-- `konsumation.service.ts` — `GET/POST/DELETE /api/konsumationen`
+- `konsumation.model.ts` — `Konsumation` (`teilnahme: TeilnahmeKurz`, `konsumationsangebot: KonsumationsangebotKurz`), `KonsumationPayload`, `KonsumationUpdatePayload` (nur `anzahl`)
+- `konsumation.service.ts` — `GET/POST/DELETE /api/konsumationen`, `update(id, dto)` → `PUT` (bestehende Matrix-Zelle)
 - Matrix-Eingabe: Teilnahmen × Angebote
 
 ### Nachbearbeitung
 
 **Abrechnungen** (`src/app/nachbearbeitung/`)
-- `abrechnung.model.ts` — `Abrechnung` (aus Schema; `teilnahme: Teilnahme`), `AbrechnungPayload`
+- `abrechnung.model.ts` — `Abrechnung` (`teilnahme: TeilnahmeKurz`), `AbrechnungPayload`, `AbrechnungUpdatePayload` (ohne Teilnahme)
 - Type `ZustellungsKanal` = Schema-Enum (`TWINT | EMAIL | PAPIER`)
-- `abrechnung.service.ts` — `GET/POST/DELETE /api/abrechnungen`
+- `abrechnung.service.ts` — `GET/POST/DELETE /api/abrechnungen`, `update(id, dto)` → `PUT` (Kanal, Zustellung UC-012; REST-003)
 - Berechnung von Anteilen, Zustellungskanal-Verwaltung
 
 **Inkasso** (`src/app/nachbearbeitung/`)
-- `mahnung.model.ts` — `Mahnung` (aus Schema; `abrechnung: Abrechnung`), `MahnungPayload`
+- `mahnung.model.ts` — `Mahnung` (`abrechnung: AbrechnungKurz`), `MahnungPayload`
 - `mahnung.service.ts` — `GET/POST/DELETE /api/mahnungen`
-- `zahlung.model.ts` — `Zahlung` (aus Schema; `abrechnung: Abrechnung`), `ZahlungPayload`
+- `zahlung.model.ts` — `Zahlung` (`abrechnung: AbrechnungKurz`), `ZahlungPayload`
 - Type `ZahlungsKanal` = Schema-Enum (`TWINT | UEBERWEISUNG | BAR`)
 - `zahlung.service.ts` — `GET/POST/DELETE /api/zahlungen`
 
@@ -179,7 +179,7 @@ Main nav is split into **Stammdaten** (no event context) and three event-scoped 
 - `login.component.*` — Login-Formular unter `/login`
 
 **Benutzerverwaltung** (`src/app/benutzer/`)
-- `benutzer.model.ts` — `Benutzer` (aus Schema ohne write-only `passwort`; `partei?: Partei | null`), `BenutzerPayload` (inkl. passwort, nur im Request)
+- `benutzer.model.ts` — `Benutzer` (`partei?: ParteiKurz`, nie Passwort/Hash), `BenutzerPayload` (inkl. `passwort`, `parteiId`)
 - `benutzer.service.ts` — `GET/POST/DELETE /api/benutzer`, `passwortSetzen(id, passwort)` → `PUT /api/benutzer/{id}/passwort`
 - `BenutzerVerwaltungComponent` — Accounts anlegen (E-Mail, Initialpasswort min. 10 Zeichen, Rolle, Partei-Dropdown bei PARTEI), Passwort-Reset (window.prompt), Löschen (window.confirm)
 
@@ -206,12 +206,12 @@ REST API läuft lokal auf `http://localhost:8080`. Spezifikationen: `../quartier
 | Personen | `GET/POST /api/persons`, `PUT/DELETE /api/persons/{id}` |
 | Parteien | `GET/POST /api/parteien`, `PUT/DELETE /api/parteien/{id}` |
 | Events | `GET/POST /api/events`, `PUT/DELETE /api/events/{id}` |
-| Einladungen | `GET/POST /api/einladungen`, `DELETE /api/einladungen/{id}` |
-| Teilnahmen | `GET/POST /api/teilnahmen`, `DELETE /api/teilnahmen/{id}` |
-| Konsumationsangebote | `GET/POST /api/konsumationsangebote`, `DELETE /api/konsumationsangebote/{id}` |
-| Konsumationen | `GET/POST /api/konsumationen`, `DELETE /api/konsumationen/{id}` |
-| Allgemeinausgaben | `GET/POST /api/allgemeinausgaben`, `DELETE /api/allgemeinausgaben/{id}` |
-| Abrechnungen | `GET/POST /api/abrechnungen`, `DELETE /api/abrechnungen/{id}` |
+| Einladungen | `GET/POST /api/einladungen`, `PUT/DELETE /api/einladungen/{id}` |
+| Teilnahmen | `GET/POST /api/teilnahmen`, `PUT/DELETE /api/teilnahmen/{id}`, `GET /api/teilnahmen/meine` |
+| Konsumationsangebote | `GET/POST /api/konsumationsangebote`, `PUT/DELETE /api/konsumationsangebote/{id}` |
+| Konsumationen | `GET/POST /api/konsumationen`, `PUT/DELETE /api/konsumationen/{id}` |
+| Allgemeinausgaben | `GET/POST /api/allgemeinausgaben`, `PUT/DELETE /api/allgemeinausgaben/{id}` |
+| Abrechnungen | `GET/POST /api/abrechnungen`, `PUT/DELETE /api/abrechnungen/{id}` |
 | Mahnungen | `GET/POST /api/mahnungen`, `DELETE /api/mahnungen/{id}` |
 | Zahlungen | `GET/POST /api/zahlungen`, `DELETE /api/zahlungen/{id}` |
 | Auth | `POST /api/auth/login` → `{token}` (HS256-JWT, 12 h) |

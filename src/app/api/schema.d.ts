@@ -28,9 +28,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        put: operations["update_8"];
         post?: never;
-        delete: operations["delete_11"];
+        delete: operations["delete_8"];
         options?: never;
         head?: never;
         patch?: never;
@@ -60,9 +60,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        put: operations["update_7"];
         post?: never;
-        delete: operations["delete_10"];
+        delete: operations["delete_7"];
         options?: never;
         head?: never;
         patch?: never;
@@ -110,7 +110,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete: operations["delete_9"];
+        delete: operations["delete_11"];
         options?: never;
         head?: never;
         patch?: never;
@@ -156,9 +156,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        put: operations["update_6"];
         post?: never;
-        delete: operations["delete_8"];
+        delete: operations["delete_6"];
         options?: never;
         head?: never;
         patch?: never;
@@ -188,9 +188,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put: operations["update_3"];
+        put: operations["update_5"];
         post?: never;
-        delete: operations["delete_3"];
+        delete: operations["delete_5"];
         options?: never;
         head?: never;
         patch?: never;
@@ -220,9 +220,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        put: operations["update_4"];
         post?: never;
-        delete: operations["delete_7"];
+        delete: operations["delete_4"];
         options?: never;
         head?: never;
         patch?: never;
@@ -252,9 +252,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        put: operations["update_3"];
         post?: never;
-        delete: operations["delete_6"];
+        delete: operations["delete_3"];
         options?: never;
         head?: never;
         patch?: never;
@@ -286,7 +286,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete: operations["delete_5"];
+        delete: operations["delete_10"];
         options?: never;
         head?: never;
         patch?: never;
@@ -430,7 +430,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete: operations["delete_4"];
+        delete: operations["delete_9"];
         options?: never;
         head?: never;
         patch?: never;
@@ -440,57 +440,128 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Abrechnung: {
+        AbrechnungKurz: {
+            /** Format: int64 */
+            id: number;
+        };
+        AbrechnungRequest: {
             anteilAllgemeinkosten: number;
             /** Format: int64 */
-            id?: number;
-            teilnahme: components["schemas"]["Teilnahme"];
+            teilnahmeId: number;
             totalBetrag: number;
             totalKonsumation: number;
             /** Format: date */
             zustellungsDatum?: string;
-            /** @enum {string} */
-            zustellungskanal: "TWINT" | "EMAIL" | "PAPIER";
+            zustellungskanal: components["schemas"]["Zustellungskanal"];
         };
-        Allgemeinausgabe: {
+        AbrechnungResponse: {
+            anteilAllgemeinkosten: number;
+            /** Format: int64 */
+            id: number;
+            teilnahme: components["schemas"]["TeilnahmeKurz"];
+            totalBetrag: number;
+            totalKonsumation: number;
+            /** Format: date */
+            zustellungsDatum?: string;
+            zustellungskanal: components["schemas"]["Zustellungskanal"];
+        };
+        AbrechnungUpdateRequest: {
+            anteilAllgemeinkosten: number;
+            totalBetrag: number;
+            totalKonsumation: number;
+            /** Format: date */
+            zustellungsDatum?: string;
+            zustellungskanal: components["schemas"]["Zustellungskanal"];
+        };
+        AllgemeinausgabeRequest: {
             beschreibung: string;
             betrag: number;
-            event: components["schemas"]["Event"];
+            /** Format: int64 */
+            eventId: number;
+            herkunft?: string;
+        };
+        AllgemeinausgabeResponse: {
+            beschreibung: string;
+            betrag: number;
+            event: components["schemas"]["EventResponse"];
             herkunft?: string;
             /** Format: int64 */
-            id?: number;
+            id: number;
         };
-        Benutzer: {
+        ApiError: {
+            message: string;
+            /** Format: int32 */
+            status: number;
+        };
+        BenutzerRequest: {
             email: string;
             /** Format: int64 */
-            id?: number;
-            partei?: components["schemas"]["Partei"];
+            parteiId?: number;
             passwort: string;
-            /** @enum {string} */
-            rolle: "ORGANISATOR" | "PARTEI";
+            rolle: components["schemas"]["Rolle"];
         };
-        Einladung: {
+        BenutzerResponse: {
+            email: string;
+            /** Format: int64 */
+            id: number;
+            partei?: components["schemas"]["ParteiKurz"];
+            rolle: components["schemas"]["Rolle"];
+        };
+        /** @enum {string} */
+        BuffetBeitrag: "KEINER" | "SALAT" | "BROT_ZOPF" | "DESSERT" | "WEITERE";
+        EinladungKurz: {
             /** Format: int32 */
             anzahlPersonen?: number;
-            bestaetigungVersendet?: boolean;
-            /** @enum {string} */
-            buffetBeitrag?: "KEINER" | "SALAT" | "BROT_ZOPF" | "DESSERT" | "WEITERE";
+            event: components["schemas"]["EventResponse"];
+            /** Format: int64 */
+            id: number;
+            partei: components["schemas"]["ParteiKurz"];
+            status: components["schemas"]["EinladungStatus"];
+        };
+        EinladungRequest: {
+            /** Format: int32 */
+            anzahlPersonen?: number;
+            bestaetigungVersendet: boolean;
+            buffetBeitrag?: components["schemas"]["BuffetBeitrag"];
             buffetBeitragBeschreibung?: string;
-            event: components["schemas"]["Event"];
+            /** Format: int64 */
+            eventId: number;
             hilftAufraumen?: boolean;
             hilftAufstellen?: boolean;
             /** Format: int64 */
-            id?: number;
-            partei: components["schemas"]["Partei"];
-            /** @enum {string} */
-            status: "OFFEN" | "ANGEMELDET" | "ABGEMELDET";
+            parteiId: number;
+            status: components["schemas"]["EinladungStatus"];
         };
-        Event: {
+        EinladungResponse: {
+            /** Format: int32 */
+            anzahlPersonen?: number;
+            bestaetigungVersendet: boolean;
+            buffetBeitrag?: components["schemas"]["BuffetBeitrag"];
+            buffetBeitragBeschreibung?: string;
+            event: components["schemas"]["EventResponse"];
+            hilftAufraumen?: boolean;
+            hilftAufstellen?: boolean;
+            /** Format: int64 */
+            id: number;
+            partei: components["schemas"]["ParteiKurz"];
+            status: components["schemas"]["EinladungStatus"];
+        };
+        /** @enum {string} */
+        EinladungStatus: "OFFEN" | "ANGEMELDET" | "ABGEMELDET";
+        EinladungUpdateRequest: {
+            /** Format: int32 */
+            anzahlPersonen?: number;
+            bestaetigungVersendet: boolean;
+            buffetBeitrag?: components["schemas"]["BuffetBeitrag"];
+            buffetBeitragBeschreibung?: string;
+            hilftAufraumen?: boolean;
+            hilftAufstellen?: boolean;
+            status: components["schemas"]["EinladungStatus"];
+        };
+        EventRequest: {
             alternativerStandort?: string;
             /** Format: date */
             datum: string;
-            /** Format: int64 */
-            id?: number;
             standort: string;
             /** Format: time-local */
             startzeit: string;
@@ -499,72 +570,153 @@ export interface components {
             /** Format: time-local */
             zeitAufstellen?: string;
         };
-        Konsumation: {
+        EventResponse: {
+            alternativerStandort?: string;
+            /** Format: date */
+            datum: string;
+            /** Format: int64 */
+            id: number;
+            standort: string;
+            /** Format: time-local */
+            startzeit: string;
+            /** Format: time-local */
+            zeitAufraumen?: string;
+            /** Format: time-local */
+            zeitAufstellen?: string;
+        };
+        KonsumationRequest: {
             /** Format: int32 */
             anzahl: number;
             /** Format: int64 */
-            id?: number;
-            konsumationsangebot: components["schemas"]["Konsumationsangebot"];
-            teilnahme: components["schemas"]["Teilnahme"];
-        };
-        Konsumationsangebot: {
-            bezeichnung: string;
-            event: components["schemas"]["Event"];
+            konsumationsangebotId: number;
             /** Format: int64 */
-            id?: number;
+            teilnahmeId: number;
+        };
+        KonsumationResponse: {
+            /** Format: int32 */
+            anzahl: number;
+            /** Format: int64 */
+            id: number;
+            konsumationsangebot: components["schemas"]["KonsumationsangebotKurz"];
+            teilnahme: components["schemas"]["TeilnahmeKurz"];
+        };
+        KonsumationsangebotKurz: {
+            bezeichnung: string;
+            /** Format: int64 */
+            id: number;
             preis: number;
+        };
+        KonsumationsangebotRequest: {
+            bezeichnung: string;
+            /** Format: int64 */
+            eventId: number;
+            preis: number;
+        };
+        KonsumationsangebotResponse: {
+            bezeichnung: string;
+            event: components["schemas"]["EventResponse"];
+            /** Format: int64 */
+            id: number;
+            preis: number;
+        };
+        KonsumationUpdateRequest: {
+            /** Format: int32 */
+            anzahl: number;
         };
         LoginRequest: {
             email: string;
             passwort: string;
         };
         LoginResponse: {
-            token?: string;
+            token: string;
         };
-        Mahnung: {
-            abrechnung: components["schemas"]["Abrechnung"];
+        MahnungRequest: {
+            /** Format: int64 */
+            abrechnungId: number;
+            bemerkung?: string;
+            /** Format: date */
+            datum: string;
+        };
+        MahnungResponse: {
+            abrechnung: components["schemas"]["AbrechnungKurz"];
             bemerkung?: string;
             /** Format: date */
             datum: string;
             /** Format: int64 */
-            id?: number;
+            id: number;
         };
-        Partei: {
+        ParteiKurz: {
             adresse: string;
             bezeichnung: string;
             /** Format: int64 */
-            id?: number;
-            personen?: components["schemas"]["Person"][];
+            id: number;
+            twintAktiv: boolean;
+            twintMobilenummer?: string;
+        };
+        ParteiRequest: {
+            adresse: string;
+            bezeichnung: string;
             personenIds?: number[];
-            twintAktiv?: boolean;
+            twintAktiv: boolean;
+            twintMobilenummer?: string;
+        };
+        ParteiResponse: {
+            adresse: string;
+            bezeichnung: string;
+            /** Format: int64 */
+            id: number;
+            personen: components["schemas"]["PersonResponse"][];
+            twintAktiv: boolean;
             twintMobilenummer?: string;
         };
         PasswortReset: {
             passwort: string;
         };
-        Person: {
+        PersonRequest: {
             email?: string;
-            /** Format: int64 */
-            id?: number;
             mobilenummer?: string;
             name: string;
             telefonnummer?: string;
             vorname: string;
         };
-        Teilnahme: {
+        PersonResponse: {
+            email?: string;
+            /** Format: int64 */
+            id: number;
+            mobilenummer?: string;
+            name: string;
+            telefonnummer?: string;
+            vorname: string;
+        };
+        /** @enum {string} */
+        Rolle: "ORGANISATOR" | "PARTEI";
+        TeilnahmeBuffetBeitrag: {
+            art: components["schemas"]["BuffetBeitrag"];
+            beschreibung?: string;
+        };
+        TeilnahmeKurz: {
+            einladung: components["schemas"]["EinladungKurz"];
+            /** Format: int64 */
+            id: number;
+        };
+        TeilnahmeRequest: {
             /** Format: int32 */
             anzahlPersonenEffektiv?: number;
             buffetBeitraege?: components["schemas"]["TeilnahmeBuffetBeitrag"][];
-            einladung: components["schemas"]["Einladung"];
+            /** Format: int64 */
+            einladungId: number;
+            hilftAufraumen?: boolean;
+            hilftAufstellen?: boolean;
+        };
+        TeilnahmeResponse: {
+            /** Format: int32 */
+            anzahlPersonenEffektiv?: number;
+            buffetBeitraege: components["schemas"]["TeilnahmeBuffetBeitrag"][];
+            einladung: components["schemas"]["EinladungKurz"];
             hilftAufraumen?: boolean;
             hilftAufstellen?: boolean;
             /** Format: int64 */
-            id?: number;
-        };
-        TeilnahmeBuffetBeitrag: {
-            /** @enum {string} */
-            art?: "KEINER" | "SALAT" | "BROT_ZOPF" | "DESSERT" | "WEITERE";
-            beschreibung?: string;
+            id: number;
         };
         TeilnahmeUpdateRequest: {
             /** Format: int32 */
@@ -573,16 +725,27 @@ export interface components {
             hilftAufraumen?: boolean;
             hilftAufstellen?: boolean;
         };
-        Zahlung: {
-            abrechnung: components["schemas"]["Abrechnung"];
+        ZahlungRequest: {
+            /** Format: int64 */
+            abrechnungId: number;
+            betrag: number;
+            /** Format: date */
+            datum: string;
+            zahlungskanal: components["schemas"]["Zahlungskanal"];
+        };
+        ZahlungResponse: {
+            abrechnung: components["schemas"]["AbrechnungKurz"];
             betrag: number;
             /** Format: date */
             datum: string;
             /** Format: int64 */
-            id?: number;
-            /** @enum {string} */
-            zahlungskanal: "TWINT" | "UEBERWEISUNG" | "BAR";
+            id: number;
+            zahlungskanal: components["schemas"]["Zahlungskanal"];
         };
+        /** @enum {string} */
+        Zahlungskanal: "TWINT" | "UEBERWEISUNG" | "BAR";
+        /** @enum {string} */
+        Zustellungskanal: "TWINT" | "EMAIL" | "PAPIER";
     };
     responses: never;
     parameters: never;
@@ -590,23 +753,49 @@ export interface components {
     headers: never;
     pathItems: never;
 }
-export type Abrechnung = components['schemas']['Abrechnung'];
-export type Allgemeinausgabe = components['schemas']['Allgemeinausgabe'];
-export type Benutzer = components['schemas']['Benutzer'];
-export type Einladung = components['schemas']['Einladung'];
-export type Event = components['schemas']['Event'];
-export type Konsumation = components['schemas']['Konsumation'];
-export type Konsumationsangebot = components['schemas']['Konsumationsangebot'];
+export type AbrechnungKurz = components['schemas']['AbrechnungKurz'];
+export type AbrechnungRequest = components['schemas']['AbrechnungRequest'];
+export type AbrechnungResponse = components['schemas']['AbrechnungResponse'];
+export type AbrechnungUpdateRequest = components['schemas']['AbrechnungUpdateRequest'];
+export type AllgemeinausgabeRequest = components['schemas']['AllgemeinausgabeRequest'];
+export type AllgemeinausgabeResponse = components['schemas']['AllgemeinausgabeResponse'];
+export type ApiError = components['schemas']['ApiError'];
+export type BenutzerRequest = components['schemas']['BenutzerRequest'];
+export type BenutzerResponse = components['schemas']['BenutzerResponse'];
+export type BuffetBeitrag = components['schemas']['BuffetBeitrag'];
+export type EinladungKurz = components['schemas']['EinladungKurz'];
+export type EinladungRequest = components['schemas']['EinladungRequest'];
+export type EinladungResponse = components['schemas']['EinladungResponse'];
+export type EinladungStatus = components['schemas']['EinladungStatus'];
+export type EinladungUpdateRequest = components['schemas']['EinladungUpdateRequest'];
+export type EventRequest = components['schemas']['EventRequest'];
+export type EventResponse = components['schemas']['EventResponse'];
+export type KonsumationRequest = components['schemas']['KonsumationRequest'];
+export type KonsumationResponse = components['schemas']['KonsumationResponse'];
+export type KonsumationsangebotKurz = components['schemas']['KonsumationsangebotKurz'];
+export type KonsumationsangebotRequest = components['schemas']['KonsumationsangebotRequest'];
+export type KonsumationsangebotResponse = components['schemas']['KonsumationsangebotResponse'];
+export type KonsumationUpdateRequest = components['schemas']['KonsumationUpdateRequest'];
 export type LoginRequest = components['schemas']['LoginRequest'];
 export type LoginResponse = components['schemas']['LoginResponse'];
-export type Mahnung = components['schemas']['Mahnung'];
-export type Partei = components['schemas']['Partei'];
+export type MahnungRequest = components['schemas']['MahnungRequest'];
+export type MahnungResponse = components['schemas']['MahnungResponse'];
+export type ParteiKurz = components['schemas']['ParteiKurz'];
+export type ParteiRequest = components['schemas']['ParteiRequest'];
+export type ParteiResponse = components['schemas']['ParteiResponse'];
 export type PasswortReset = components['schemas']['PasswortReset'];
-export type Person = components['schemas']['Person'];
-export type Teilnahme = components['schemas']['Teilnahme'];
+export type PersonRequest = components['schemas']['PersonRequest'];
+export type PersonResponse = components['schemas']['PersonResponse'];
+export type Rolle = components['schemas']['Rolle'];
 export type TeilnahmeBuffetBeitrag = components['schemas']['TeilnahmeBuffetBeitrag'];
+export type TeilnahmeKurz = components['schemas']['TeilnahmeKurz'];
+export type TeilnahmeRequest = components['schemas']['TeilnahmeRequest'];
+export type TeilnahmeResponse = components['schemas']['TeilnahmeResponse'];
 export type TeilnahmeUpdateRequest = components['schemas']['TeilnahmeUpdateRequest'];
-export type Zahlung = components['schemas']['Zahlung'];
+export type ZahlungRequest = components['schemas']['ZahlungRequest'];
+export type ZahlungResponse = components['schemas']['ZahlungResponse'];
+export type Zahlungskanal = components['schemas']['Zahlungskanal'];
+export type Zustellungskanal = components['schemas']['Zustellungskanal'];
 export type $defs = Record<string, never>;
 export interface operations {
     findAll_11: {
@@ -618,13 +807,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Abrechnung"][];
+                    "application/json": components["schemas"]["AbrechnungResponse"][];
                 };
             };
         };
@@ -638,22 +836,66 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Abrechnung"];
+                "application/json": components["schemas"]["AbrechnungRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Abrechnung"];
+                    "application/json": components["schemas"]["AbrechnungResponse"];
                 };
             };
         };
     };
-    delete_11: {
+    update_8: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AbrechnungUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AbrechnungResponse"];
+                };
+            };
+        };
+    };
+    delete_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -664,6 +906,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -682,13 +933,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Allgemeinausgabe"][];
+                    "application/json": components["schemas"]["AllgemeinausgabeResponse"][];
                 };
             };
         };
@@ -702,22 +962,66 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Allgemeinausgabe"];
+                "application/json": components["schemas"]["AllgemeinausgabeRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Allgemeinausgabe"];
+                    "application/json": components["schemas"]["AllgemeinausgabeResponse"];
                 };
             };
         };
     };
-    delete_10: {
+    update_7: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AllgemeinausgabeRequest"];
+            };
+        };
+        responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AllgemeinausgabeResponse"];
+                };
+            };
+        };
+    };
+    delete_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -728,6 +1032,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -750,13 +1063,22 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["LoginResponse"];
+                    "application/json": components["schemas"]["LoginResponse"];
                 };
             };
         };
@@ -770,13 +1092,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Benutzer"][];
+                    "application/json": components["schemas"]["BenutzerResponse"][];
                 };
             };
         };
@@ -790,22 +1121,31 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Benutzer"];
+                "application/json": components["schemas"]["BenutzerRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Benutzer"];
+                    "application/json": components["schemas"]["BenutzerResponse"];
                 };
             };
         };
     };
-    delete_9: {
+    delete_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -816,6 +1156,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -840,13 +1189,22 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Benutzer"];
+                    "application/json": components["schemas"]["BenutzerResponse"];
                 };
             };
         };
@@ -860,13 +1218,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Einladung"][];
+                    "application/json": components["schemas"]["EinladungResponse"][];
                 };
             };
         };
@@ -880,22 +1247,66 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Einladung"];
+                "application/json": components["schemas"]["EinladungRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Einladung"];
+                    "application/json": components["schemas"]["EinladungResponse"];
                 };
             };
         };
     };
-    delete_8: {
+    update_6: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EinladungUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EinladungResponse"];
+                };
+            };
+        };
+    };
+    delete_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -906,6 +1317,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -924,13 +1344,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Event"][];
+                    "application/json": components["schemas"]["EventResponse"][];
                 };
             };
         };
@@ -944,22 +1373,31 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Event"];
+                "application/json": components["schemas"]["EventRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Event"];
+                    "application/json": components["schemas"]["EventResponse"];
                 };
             };
         };
     };
-    update_3: {
+    update_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -970,22 +1408,31 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Event"];
+                "application/json": components["schemas"]["EventRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Event"];
+                    "application/json": components["schemas"]["EventResponse"];
                 };
             };
         };
     };
-    delete_3: {
+    delete_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -996,6 +1443,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -1014,13 +1470,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Konsumation"][];
+                    "application/json": components["schemas"]["KonsumationResponse"][];
                 };
             };
         };
@@ -1034,22 +1499,66 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Konsumation"];
+                "application/json": components["schemas"]["KonsumationRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Konsumation"];
+                    "application/json": components["schemas"]["KonsumationResponse"];
                 };
             };
         };
     };
-    delete_7: {
+    update_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KonsumationUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KonsumationResponse"];
+                };
+            };
+        };
+    };
+    delete_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -1060,6 +1569,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -1078,13 +1596,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Konsumationsangebot"][];
+                    "application/json": components["schemas"]["KonsumationsangebotResponse"][];
                 };
             };
         };
@@ -1098,22 +1625,66 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Konsumationsangebot"];
+                "application/json": components["schemas"]["KonsumationsangebotRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Konsumationsangebot"];
+                    "application/json": components["schemas"]["KonsumationsangebotResponse"];
                 };
             };
         };
     };
-    delete_6: {
+    update_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KonsumationsangebotRequest"];
+            };
+        };
+        responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KonsumationsangebotResponse"];
+                };
+            };
+        };
+    };
+    delete_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -1124,6 +1695,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -1142,13 +1722,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Mahnung"][];
+                    "application/json": components["schemas"]["MahnungResponse"][];
                 };
             };
         };
@@ -1162,22 +1751,31 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Mahnung"];
+                "application/json": components["schemas"]["MahnungRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Mahnung"];
+                    "application/json": components["schemas"]["MahnungResponse"];
                 };
             };
         };
     };
-    delete_5: {
+    delete_10: {
         parameters: {
             query?: never;
             header?: never;
@@ -1188,6 +1786,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -1206,13 +1813,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Partei"][];
+                    "application/json": components["schemas"]["ParteiResponse"][];
                 };
             };
         };
@@ -1226,17 +1842,26 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Partei"];
+                "application/json": components["schemas"]["ParteiRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Partei"];
+                    "application/json": components["schemas"]["ParteiResponse"];
                 };
             };
         };
@@ -1252,17 +1877,26 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Partei"];
+                "application/json": components["schemas"]["ParteiRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Partei"];
+                    "application/json": components["schemas"]["ParteiResponse"];
                 };
             };
         };
@@ -1278,6 +1912,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -1296,13 +1939,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Person"][];
+                    "application/json": components["schemas"]["PersonResponse"][];
                 };
             };
         };
@@ -1316,17 +1968,26 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Person"];
+                "application/json": components["schemas"]["PersonRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Person"];
+                    "application/json": components["schemas"]["PersonResponse"];
                 };
             };
         };
@@ -1342,17 +2003,26 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Person"];
+                "application/json": components["schemas"]["PersonRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Person"];
+                    "application/json": components["schemas"]["PersonResponse"];
                 };
             };
         };
@@ -1368,6 +2038,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -1386,13 +2065,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Teilnahme"][];
+                    "application/json": components["schemas"]["TeilnahmeResponse"][];
                 };
             };
         };
@@ -1406,17 +2094,26 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Teilnahme"];
+                "application/json": components["schemas"]["TeilnahmeRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Teilnahme"];
+                    "application/json": components["schemas"]["TeilnahmeResponse"];
                 };
             };
         };
@@ -1436,13 +2133,22 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Teilnahme"];
+                    "application/json": components["schemas"]["TeilnahmeResponse"];
                 };
             };
         };
@@ -1458,6 +2164,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
@@ -1476,13 +2191,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Teilnahme"];
+                    "application/json": components["schemas"]["TeilnahmeResponse"];
                 };
             };
         };
@@ -1496,13 +2220,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Zahlung"][];
+                    "application/json": components["schemas"]["ZahlungResponse"][];
                 };
             };
         };
@@ -1516,22 +2249,31 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Zahlung"];
+                "application/json": components["schemas"]["ZahlungRequest"];
             };
         };
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Zahlung"];
+                    "application/json": components["schemas"]["ZahlungResponse"];
                 };
             };
         };
     };
-    delete_4: {
+    delete_9: {
         parameters: {
             query?: never;
             header?: never;
@@ -1542,6 +2284,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Fehler im einheitlichen Format (ERROR-001) */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description OK */
             200: {
                 headers: {

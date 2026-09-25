@@ -123,13 +123,15 @@ export class KonsumationenVerwaltungComponent implements OnInit {
         const existingId = ids[key];
 
         if (anzahl > 0) {
+          // REST-003 (erweitert): bestehende Zelle per PUT (nur Anzahl), neue per POST
           requests.push(
-            this.konsumationService.save({
-              id: existingId,
-              teilnahme: { id: t.id },
-              konsumationsangebot: { id: a.id },
-              anzahl,
-            }),
+            existingId
+              ? this.konsumationService.update(existingId, { anzahl })
+              : this.konsumationService.save({
+                  teilnahmeId: t.id,
+                  konsumationsangebotId: a.id,
+                  anzahl,
+                }),
           );
         } else if (existingId) {
           requests.push(this.konsumationService.delete(existingId));

@@ -1,17 +1,10 @@
-import type { Konsumation as ApiKonsumation } from '../api/schema';
-import { Persisted } from '../api/types';
-import { Konsumationsangebot } from '../konsumationsangebote/konsumationsangebot.model';
-import { Teilnahme } from '../teilnahmen/teilnahme.model';
+import type {
+  KonsumationRequest,
+  KonsumationResponse,
+  KonsumationUpdateRequest,
+} from '../api/schema';
 
-/** Antwort-Typ aus dem OpenAPI-Schema (API-001). */
-export type Konsumation = Persisted<Omit<ApiKonsumation, 'teilnahme' | 'konsumationsangebot'>> & {
-  teilnahme: Teilnahme;
-  konsumationsangebot: Konsumationsangebot;
-};
-
-export interface KonsumationPayload {
-  id?: number;
-  teilnahme: { id: number };
-  konsumationsangebot: { id: number };
-  anzahl: number;
-}
+/** UC-010: Contract-Typen aus dem OpenAPI-Schema (API-001 Stufe 2); PUT ändert nur die Anzahl. */
+export type Konsumation = KonsumationResponse;
+export type KonsumationPayload = KonsumationRequest;
+export type KonsumationUpdatePayload = KonsumationUpdateRequest;

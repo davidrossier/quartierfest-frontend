@@ -8,6 +8,7 @@
  *  - [HAPPY]  Allgemeinausgabe erfolgreich erfassen
  *  - [HAPPY]  Gesamtbetrag wird korrekt summiert
  *  - [HAPPY]  Ausgabe löschen
+ *  - [HAPPY]  Ausgabe bearbeiten — aktualisiert denselben Datensatz (PUT, REST-003)
  *  - [ERROR]  Ausgabe ohne Betrag speichern schlägt fehl
  *  - [ERROR]  Ausgabe ohne Beschreibung speichern schlägt fehl
  */
@@ -81,6 +82,33 @@ test.describe('UC-007 — Allgemeinausgaben verwalten', () => {
         ausgabenPage.tabelle.getByRole('row').filter({ hasText: 'Delete-Ausgabe-E2E' }),
       ).toHaveCount(0);
 
+      await deleteTestEvent(event.id);
+    });
+    test('Ausgabe bearbeiten — aktualisiert denselben Datensatz (PUT, REST-003)', async ({ page }) => {
+      ausgabenPage = new AllgemeinausgabenPage(page);
+
+      const event = await createTestEvent({ standort: 'Edit-Ausgabe-E2E' });
+      const ausgabe = await createTestAllgemeinausgabe({
+        eventId: event.id,
+        beschreibung: 'Edit-Ausgabe-E2E',
+        betrag: 50,
+      });
+
+      await ausgabenPage.goto(event.id);
+      await ausgabenPage.bearbeiten('Edit-Ausgabe-E2E');
+      await ausgabenPage.inputBetrag.fill('75');
+      await ausgabenPage.speichern();
+
+      await expect(ausgabenPage.erfolgsMeldung).toContainText('aktualisiert');
+      const ausgaben: TestAllgemeinausgabe[] = await fetch('http://localhost:8080/api/allgemeinausgaben').then((r) =>
+        r.json(),
+      );
+      const treffer = ausgaben.filter((x) => x.beschreibung === 'Edit-Ausgabe-E2E');
+      expect(treffer).toHaveLength(1);
+      expect(treffer[0].id).toBe(ausgabe.id);
+      expect(treffer[0].betrag).toBe(75);
+
+      await deleteTestAllgemeinausgabe(ausgabe.id);
       await deleteTestEvent(event.id);
     });
   });

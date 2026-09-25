@@ -114,8 +114,8 @@ export class EinladungenVerwaltungComponent implements OnInit {
     forkJoin(
       nichtEingeladen.map(p =>
         this.einladungService.save({
-          event: { id: eventId },
-          partei: { id: p.id },
+          eventId,
+          parteiId: p.id,
           status: 'OFFEN',
           bestaetigungVersendet: false,
         }),
@@ -157,7 +157,7 @@ export class EinladungenVerwaltungComponent implements OnInit {
     const editEinladung = this.bearbeitungEinladung();
 
     if (editEinladung) {
-      this.rueckmeldungSpeichern(editEinladung, eventId);
+      this.rueckmeldungSpeichern(editEinladung);
     } else {
       this.neueEinladungSpeichern(eventId);
     }
@@ -216,8 +216,8 @@ export class EinladungenVerwaltungComponent implements OnInit {
     }
     this.einladungService
       .save({
-        event: { id: eventId },
-        partei: { id: Number(parteiId) },
+        eventId,
+        parteiId: Number(parteiId),
         status: 'OFFEN',
         bestaetigungVersendet: false,
       })
@@ -234,7 +234,7 @@ export class EinladungenVerwaltungComponent implements OnInit {
       });
   }
 
-  private rueckmeldungSpeichern(einladung: Einladung, eventId: number): void {
+  private rueckmeldungSpeichern(einladung: Einladung): void {
     if (this.erfassenForm.invalid) {
       this.erfassenForm.markAllAsTouched();
       return;
@@ -243,11 +243,9 @@ export class EinladungenVerwaltungComponent implements OnInit {
       this.erfassenForm.value;
     const angemeldet = status === 'ANGEMELDET';
 
+    // REST-003: PUT mit der Einladungs-Whitelist (Event und Partei bleiben fix)
     this.einladungService
-      .save({
-        id: einladung.id,
-        event: { id: eventId },
-        partei: { id: einladung.partei.id },
+      .update(einladung.id, {
         status: status as EinladungStatus,
         anzahlPersonen: angemeldet && anzahlPersonen != null ? Number(anzahlPersonen) : undefined,
         hilftAufstellen: angemeldet ? (hilftAufstellen ?? false) : undefined,

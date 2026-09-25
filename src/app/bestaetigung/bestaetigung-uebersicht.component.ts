@@ -94,11 +94,9 @@ export class BestaetigungUebersichtComponent implements OnInit {
   }
 
   markiereVersendet(einladung: Einladung): void {
+    // REST-003: PUT mit der Einladungs-Whitelist (Event und Partei bleiben fix)
     this.einladungService
-      .save({
-        id: einladung.id,
-        event: { id: einladung.event.id },
-        partei: { id: einladung.partei.id },
+      .update(einladung.id, {
         status: einladung.status,
         anzahlPersonen: einladung.anzahlPersonen,
         hilftAufstellen: einladung.hilftAufstellen,
@@ -125,10 +123,7 @@ export class BestaetigungUebersichtComponent implements OnInit {
 
     forkJoin(
       unversendet.map(e =>
-        this.einladungService.save({
-          id: e.id,
-          event: { id: e.event.id },
-          partei: { id: e.partei.id },
+        this.einladungService.update(e.id, {
           status: e.status,
           anzahlPersonen: e.anzahlPersonen,
           hilftAufstellen: e.hilftAufstellen,

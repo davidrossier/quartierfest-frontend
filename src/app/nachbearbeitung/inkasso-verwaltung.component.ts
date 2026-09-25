@@ -163,7 +163,7 @@ export class InkassoVerwaltungComponent implements OnInit {
     const { zahlungskanal, datum, betrag } = this.zahlungForm.value;
     this.zahlungService
       .save({
-        abrechnung: { id: abrechnung.id },
+        abrechnungId: abrechnung.id,
         zahlungskanal: zahlungskanal as any,
         datum: datum!,
         betrag: Number(betrag),
@@ -197,7 +197,7 @@ export class InkassoVerwaltungComponent implements OnInit {
     const { datum, bemerkung } = this.mahnungForm.value;
     this.mahnungService
       .save({
-        abrechnung: { id: abrechnung.id },
+        abrechnungId: abrechnung.id,
         datum: datum!,
         bemerkung: bemerkung || undefined,
       })

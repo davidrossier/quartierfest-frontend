@@ -30,7 +30,6 @@ Angular 21 **Standalone**-Anwendung — keine NgModules. Jede Komponente verwend
 | `src/app/app.html` | Root-Komponente mit Navigation und `<router-outlet>` |
 | `src/styles.css` | Globale Design-Tokens und gemeinsame Komponenten-Styles |
 | `src/app/api/schema.d.ts` | Generierte API-Typen (openapi-typescript, **nicht von Hand editieren**) |
-| `src/app/api/types.ts` | `Persisted<T, K>` — Antwort-Typ mit gesetzter `id` |
 
 ## Navigationsstruktur
 
@@ -73,7 +72,7 @@ Event-abhängige Routen teilen sich den `EventKontextLayoutComponent`, der den E
 
 ## API-Typen (API-001)
 
-Der API-Contract liegt als OpenAPI-Spec im Backend-Repo (`../quartierfest-backend/specs/openapi.json`, dort via Integrationstest gegen `/v3/api-docs` abgeglichen). Daraus wird `src/app/api/schema.d.ts` generiert und eingecheckt. Alle `*.model.ts` leiten ihre **Antwort-Typen** daraus ab (`Persisted<…>`), die `*Payload`-Typen bleiben handgeschrieben, bis das Backend getrennte Request-/Response-DTOs liefert (Stufe 2).
+Der API-Contract liegt als OpenAPI-Spec im Backend-Repo (`../quartierfest-backend/specs/openapi.json`, dort via Integrationstest gegen `/v3/api-docs` abgeglichen). Daraus wird `src/app/api/schema.d.ts` generiert und eingecheckt. Seit API-001 Stufe 2 liefert das Backend getrennte Request- und Response-Schemas; alle `*.model.ts` sind reine Aliase darauf (`Xxx = XxxResponse`, `XxxPayload = XxxRequest`). Requests referenzieren über flache IDs (`eventId`, `parteiId`, …), Bearbeiten läuft immer über `PUT`.
 
 Die CI checkt `specs/openapi.json` von Backend-`main` aus und schlägt fehl, wenn das Generat nicht mehr zum eingecheckten `schema.d.ts` passt. Bei einer Contract-Änderung deshalb: Backend-PR zuerst mergen, dann hier `npm run api:generate`, Typfehler beheben, `schema.d.ts` mitcommitten.
 
@@ -94,12 +93,12 @@ REST API auf `http://localhost:8080`. Spezifikationen unter `../quartierfest-bac
 | Personen | `GET/POST /api/persons`, `PUT /api/persons/:id`, `DELETE /api/persons/:id` |
 | Parteien | `GET/POST /api/parteien`, `PUT /api/parteien/:id`, `DELETE /api/parteien/:id` |
 | Events | `GET/POST /api/events`, `PUT /api/events/:id`, `DELETE /api/events/:id` |
-| Einladungen | `GET/POST /api/einladungen`, `DELETE /api/einladungen/:id` |
-| Teilnahmen | `GET/POST /api/teilnahmen`, `DELETE /api/teilnahmen/:id`, `GET /api/teilnahmen/meine` + `PUT /api/teilnahmen/:id` (UC-016) |
-| Allgemeinausgaben | `GET/POST /api/allgemeinausgaben`, `DELETE /api/allgemeinausgaben/:id` |
-| Konsumationsangebote | `GET/POST /api/konsumationsangebote`, `DELETE /api/konsumationsangebote/:id` |
-| Konsumationen | `GET/POST /api/konsumationen`, `DELETE /api/konsumationen/:id` |
-| Abrechnungen | `GET/POST /api/abrechnungen`, `DELETE /api/abrechnungen/:id` |
+| Einladungen | `GET/POST /api/einladungen`, `PUT/DELETE /api/einladungen/:id` |
+| Teilnahmen | `GET/POST /api/teilnahmen`, `PUT/DELETE /api/teilnahmen/:id`, `GET /api/teilnahmen/meine` (UC-016) |
+| Allgemeinausgaben | `GET/POST /api/allgemeinausgaben`, `PUT/DELETE /api/allgemeinausgaben/:id` |
+| Konsumationsangebote | `GET/POST /api/konsumationsangebote`, `PUT/DELETE /api/konsumationsangebote/:id` |
+| Konsumationen | `GET/POST /api/konsumationen`, `PUT/DELETE /api/konsumationen/:id` |
+| Abrechnungen | `GET/POST /api/abrechnungen`, `PUT/DELETE /api/abrechnungen/:id` |
 | Zahlungen | `GET/POST /api/zahlungen`, `DELETE /api/zahlungen/:id` |
 | Mahnungen | `GET/POST /api/mahnungen`, `DELETE /api/mahnungen/:id` |
 | Benutzer | `GET/POST /api/benutzer`, `DELETE /api/benutzer/:id`, `PUT /api/benutzer/:id/passwort` |

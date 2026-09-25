@@ -60,7 +60,7 @@ export class BenutzerVerwaltungComponent implements OnInit {
       email: email!,
       passwort: passwort!,
       rolle: rolle!,
-      partei: rolle === 'PARTEI' && parteiId ? { id: parteiId } : null,
+      parteiId: rolle === 'PARTEI' && parteiId ? parteiId : undefined,
     };
     this.ladevorgang.set(true);
     this.fehler.set(null);

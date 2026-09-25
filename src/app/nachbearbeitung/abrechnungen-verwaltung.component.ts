@@ -127,7 +127,7 @@ export class AbrechnungenVerwaltungComponent implements OnInit {
           const anteil = rundeAufRappen(kostenProPerson * (t.anzahlPersonenEffektiv ?? 0));
           const konsumation = rundeAufRappen(konsumationTotals.get(t.id) ?? 0);
           return {
-            teilnahme: { id: t.id },
+            teilnahmeId: t.id,
             anteilAllgemeinkosten: anteil,
             totalKonsumation: konsumation,
             totalBetrag: anteil + konsumation,
@@ -180,10 +180,9 @@ export class AbrechnungenVerwaltungComponent implements OnInit {
   kanalSpeichern(abrechnung: Abrechnung): void {
     const kanal = this.kanalEdits()[abrechnung.id];
     if (!kanal) return;
+    // REST-003: PUT mit der Abrechnungs-Whitelist (die Teilnahme bleibt fix)
     this.abrechnungService
-      .save({
-        id: abrechnung.id,
-        teilnahme: { id: abrechnung.teilnahme.id },
+      .update(abrechnung.id, {
         anteilAllgemeinkosten: abrechnung.anteilAllgemeinkosten,
         totalKonsumation: abrechnung.totalKonsumation,
         totalBetrag: abrechnung.totalBetrag,
@@ -206,10 +205,9 @@ export class AbrechnungenVerwaltungComponent implements OnInit {
   }
 
   alsZugestelltMarkieren(abrechnung: Abrechnung): void {
+    // REST-003: PUT mit der Abrechnungs-Whitelist (die Teilnahme bleibt fix)
     this.abrechnungService
-      .save({
-        id: abrechnung.id,
-        teilnahme: { id: abrechnung.teilnahme.id },
+      .update(abrechnung.id, {
         anteilAllgemeinkosten: abrechnung.anteilAllgemeinkosten,
         totalKonsumation: abrechnung.totalKonsumation,
         totalBetrag: abrechnung.totalBetrag,

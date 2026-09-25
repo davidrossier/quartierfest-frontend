@@ -22,12 +22,12 @@ describe('BenutzerVerwaltungComponent (UC-015)', () => {
     const fixture = TestBed.createComponent(BenutzerVerwaltungComponent);
     fixture.detectChanges();
     httpMock.expectOne(`${environment.apiUrl}/api/benutzer`).flush([
-      { id: 1, email: 'admin@quartierfest.local', rolle: 'ORGANISATOR', partei: null },
+      { id: 1, email: 'admin@quartierfest.local', rolle: 'ORGANISATOR' },
       {
         id: 2,
         email: 'mueller@quartier.ch',
         rolle: 'PARTEI',
-        partei: { id: 1, bezeichnung: 'Familie Müller' },
+        partei: { id: 1, bezeichnung: 'Familie Müller', adresse: 'Buchlenweg 1', twintAktiv: false },
       },
     ]);
     httpMock
@@ -60,9 +60,14 @@ describe('BenutzerVerwaltungComponent (UC-015)', () => {
       email: 'meier@quartier.ch',
       passwort: 'geheim-1234',
       rolle: 'PARTEI',
-      partei: { id: 1 },
+      parteiId: 1,
     });
-    req.flush({ id: 3, email: 'meier@quartier.ch', rolle: 'PARTEI', partei: { id: 1 } });
+    req.flush({
+      id: 3,
+      email: 'meier@quartier.ch',
+      rolle: 'PARTEI',
+      partei: { id: 1, bezeichnung: 'Familie Müller', adresse: 'Buchlenweg 1', twintAktiv: false },
+    });
     // Liste wird neu geladen
     httpMock.expectOne(`${environment.apiUrl}/api/benutzer`).flush([]);
     expect(component.erfolg()).toContain('meier@quartier.ch');
